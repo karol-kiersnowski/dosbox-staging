@@ -614,6 +614,7 @@ void DOSBOX_Init(void) {
 #if C_FLUIDSYNTH
 		"fluidsynth",
 #endif
+		"mt32",
 		"none",
 		0
 	};
@@ -659,6 +660,8 @@ void DOSBOX_Init(void) {
 #if C_FLUIDSYNTH
 	FLUID_AddConfigSection(control);
 #endif
+
+#include "mt32options.h"
 
 #if C_DEBUG
 	secprop=control->AddSection_prop("debug",&DEBUG_Init);
