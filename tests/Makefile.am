@@ -18,7 +18,6 @@ tests_SOURCES = \
 	example.cpp \
 	fifo.cpp \
 	fs_utils.cpp \
-	myfifo.cpp \
 	readerwritercircularbuffer.cpp \
 	setup.cpp \
 	soft_limiter.cpp \
