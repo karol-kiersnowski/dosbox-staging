@@ -15,6 +15,7 @@ threads_dep = dependency('threads')
 # subdirs
 incdir = include_directories('include', '.')
 subdir('src/cpu')
+subdir('src/dos')
 subdir('src/gui')
 subdir('src/hardware')
 subdir('src/libs/nuked')
@@ -28,6 +29,7 @@ libnuked_dep = declare_dependency(link_with : libnuked)
 
 # internal libs
 libcpu_dep      = declare_dependency(link_with : libcpu)
+libdos_dep      = declare_dependency(link_with : libdos)
 libgui_dep      = declare_dependency(link_with : libgui)
 libhardware_dep = declare_dependency(link_with : libhardware)
 libmidi_dep     = declare_dependency(link_with : libmidi)

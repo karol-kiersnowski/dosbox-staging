@@ -10,4 +10,7 @@
 // MSVC: #define INLINE __forceinline
 #define INLINE inline __attribute__((always_inline))
 
+// TODO
+#define C_HAS_ATTRIBUTE 1
+
 #endif
