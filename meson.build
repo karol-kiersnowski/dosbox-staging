@@ -12,14 +12,19 @@ configure_file(input : 'src/config.h.in',
 sdl2_dep    = dependency('sdl2')
 threads_dep = dependency('threads')
 
-# subdirs
+# includes
 incdir = include_directories('include', '.')
+
+# bundled dependencies
+subdir('src/libs/decoders')
+subdir('src/libs/nuked')
+
+# subdirs
 subdir('src/cpu')
 subdir('src/gui')
 subdir('src/hardware')
 subdir('src/ints')
 subdir('src/dos')
-subdir('src/libs/nuked')
 subdir('src/midi') # TODO     midi depends on: hardware,
                    #      hardware depends on: cpu, gui
 		   #           gui depends on: cpu, ints
@@ -27,7 +32,8 @@ subdir('src/misc') #          misc depends on: gui, dos
 subdir('src/shell')
 
 # bundled dependencies
-libnuked_dep = declare_dependency(link_with : libnuked)
+libdecoders_dep = declare_dependency(link_with : libdecoders)
+libnuked_dep    = declare_dependency(link_with : libnuked)
 
 # internal libs
 libcpu_dep      = declare_dependency(link_with : libcpu)

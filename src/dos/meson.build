@@ -24,9 +24,12 @@ libdos_sources = files('''
     dos_misc.cpp
     '''.split())
 
+# bundled libs
+libdecoders_dep = declare_dependency(link_with : libdecoders)
+
 # internal libs
-libints_dep = declare_dependency(link_with : libints)
+libints_dep     = declare_dependency(link_with : libints)
 
 libdos = static_library('dos', libdos_sources,
                         include_directories : incdir,
-                        dependencies : [sdl2_dep, threads_dep, libints_dep])
+                        dependencies : [sdl2_dep, threads_dep, libdecoders_dep, libints_dep])
