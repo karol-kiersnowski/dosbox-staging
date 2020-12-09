@@ -10,4 +10,4 @@ libmisc_sources = [
 
 libmisc = static_library('misc', libmisc_sources,
                          include_directories : incdir,
-                         dependencies : sdl2_dep)
+                         dependencies : [sdl2_dep, threads_dep])

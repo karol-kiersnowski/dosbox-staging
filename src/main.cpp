@@ -7,8 +7,9 @@
 
 #include "envelope.h"
 #include "fs_utils.h"
-#include "midi.h"
 #include "libs/nuked/opl3.h" // C library test
+#include "logging.h"
+#include "midi.h"
 
 int main()
 {
@@ -40,6 +41,7 @@ int main()
 	// code in hardware test
 	Envelope("foobar");
 
-	printf("Bye!\n");
+	// code in gui test
+	// LOG_MSG("Bye!\n");
 	return 0;
 }
