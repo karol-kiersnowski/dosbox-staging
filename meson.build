@@ -14,12 +14,14 @@ sdl2_dep = dependency('sdl2')
 # subdirs
 incdir = include_directories('include', '.')
 subdir('src/libs/nuked')
+# subdir('src/midi') # TODO midi depends on libhardware
 subdir('src/misc')
 
 # bundled dependencies
 libnuked_dep = declare_dependency(link_with : libnuked)
 
 # internal libs
+# libmidi_dep = declare_dependency(link_with : libmidi)
 libmisc_dep = declare_dependency(link_with : libmisc)
 
 # binary
@@ -27,6 +29,7 @@ executable('dosbox', 'src/main.cpp',
            dependencies : [
 	     sdl2_dep,
 	     libnuked_dep,
+	     # libmidi_dep,
 	     libmisc_dep,
 	   ],
 	   include_directories : incdir)

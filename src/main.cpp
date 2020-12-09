@@ -6,6 +6,7 @@
 #include <SDL.h>
 
 #include "fs_utils.h"
+#include "midi.h"
 #include "libs/nuked/opl3.h" // C library test
 
 int main()
@@ -31,6 +32,9 @@ int main()
 
 	// code in misc test
 	const std::string home = to_native_path("~");
+
+	// code in midi test
+	// MIDI_ListAll(nullptr);
 
 	return 0;
 }
