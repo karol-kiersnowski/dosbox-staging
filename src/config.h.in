@@ -1,6 +1,13 @@
 #ifndef DOSBOX_CONFIG_H
 #define DOSBOX_CONFIG_H
 
-#define VERSION_STR "@version@"
+#define VERSION "@version@"
+
+// TODO make it a suffix, configurable via meson
+#define CONF_BRAND "staging-git"
+
+// TODO: move this to compiler.h
+// MSVC: #define INLINE __forceinline
+#define INLINE inline __attribute__((always_inline))
 
 #endif

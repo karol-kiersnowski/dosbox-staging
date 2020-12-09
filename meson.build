@@ -8,14 +8,25 @@ configure_file(input : 'src/config.h.in',
                output : 'config.h',
                configuration : conf_data)
 
-# subdirs
-subdir('src/libs/nuked')
-
 # external dependencies
 sdl2_dep = dependency('sdl2')
 
-# internal dependencies
+# subdirs
+incdir = include_directories('include', '.')
+subdir('src/libs/nuked')
+subdir('src/misc')
+
+# bundled dependencies
 libnuked_dep = declare_dependency(link_with : libnuked)
 
+# internal libs
+libmisc_dep = declare_dependency(link_with : libmisc)
+
 # binary
-executable('dosbox', 'src/main.cpp', dependencies : [ sdl2_dep, libnuked_dep ])
+executable('dosbox', 'src/main.cpp',
+           dependencies : [
+	     sdl2_dep,
+	     libnuked_dep,
+	     libmisc_dep,
+	   ],
+	   include_directories : incdir)
