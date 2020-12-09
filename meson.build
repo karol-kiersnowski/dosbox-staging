@@ -14,6 +14,7 @@ threads_dep = dependency('threads')
 
 # subdirs
 incdir = include_directories('include', '.')
+subdir('src/cpu')
 subdir('src/gui')
 subdir('src/hardware')
 subdir('src/libs/nuked')
@@ -26,6 +27,7 @@ subdir('src/misc') #          misc depends on: gui, dos
 libnuked_dep = declare_dependency(link_with : libnuked)
 
 # internal libs
+libcpu_dep      = declare_dependency(link_with : libcpu)
 libgui_dep      = declare_dependency(link_with : libgui)
 libhardware_dep = declare_dependency(link_with : libhardware)
 libmidi_dep     = declare_dependency(link_with : libmidi)
@@ -36,6 +38,7 @@ executable('dosbox', 'src/main.cpp',
            dependencies : [
 	     sdl2_dep,
 	     threads_dep,
+	     libcpu_dep,
 	     libgui_dep,
 	     libhardware_dep,
 	     libnuked_dep,
