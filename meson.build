@@ -23,6 +23,7 @@ subdir('src/midi') # TODO     midi depends on: hardware,
                    #      hardware depends on: cpu, gui
 		   #           gui depends on: cpu, ints
 subdir('src/misc') #          misc depends on: gui, dos
+subdir('src/shell')
 
 # bundled dependencies
 libnuked_dep = declare_dependency(link_with : libnuked)
@@ -34,9 +35,12 @@ libgui_dep      = declare_dependency(link_with : libgui)
 libhardware_dep = declare_dependency(link_with : libhardware)
 libmidi_dep     = declare_dependency(link_with : libmidi)
 libmisc_dep     = declare_dependency(link_with : libmisc)
+libshell_dep    = declare_dependency(link_with : libshell)
 
 # binary
-executable('dosbox', 'src/main.cpp',
+bin_sources = ['src/main.cpp', 'src/dosbox.cpp']
+executable('dosbox',
+           bin_sources,
            dependencies : [
 	     sdl2_dep,
 	     threads_dep,
@@ -46,5 +50,6 @@ executable('dosbox', 'src/main.cpp',
 	     libnuked_dep,
 	     libmidi_dep,
 	     libmisc_dep,
+	     libshell_dep,
 	   ],
 	   include_directories : incdir)

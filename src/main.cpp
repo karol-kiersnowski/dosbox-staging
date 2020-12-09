@@ -42,6 +42,6 @@ int main()
 	Envelope("foobar");
 
 	// code in gui test
-	// LOG_MSG("Bye!\n");
+	LOG_MSG("Bye!\n");
 	return 0;
 }
