@@ -5,6 +5,7 @@
 
 #include <SDL.h>
 
+#include "envelope.h"
 #include "fs_utils.h"
 #include "midi.h"
 #include "libs/nuked/opl3.h" // C library test
@@ -35,6 +36,10 @@ int main()
 
 	// code in midi test
 	// MIDI_ListAll(nullptr);
+	
+	// code in hardware test
+	Envelope("foobar");
 
+	printf("Bye!\n");
 	return 0;
 }
