@@ -24,6 +24,9 @@ libdos_sources = files('''
     dos_misc.cpp
     '''.split())
 
+# internal libs
+libints_dep = declare_dependency(link_with : libints)
+
 libdos = static_library('dos', libdos_sources,
                         include_directories : incdir,
-                        dependencies : [sdl2_dep, threads_dep])
+                        dependencies : [sdl2_dep, threads_dep, libints_dep])
