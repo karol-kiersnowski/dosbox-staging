@@ -1,0 +1,6 @@
+#ifndef DOSBOX_CONFIG_H
+#define DOSBOX_CONFIG_H
+
+#define VERSION_STR "@version@"
+
+#endif
