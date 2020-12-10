@@ -9,8 +9,44 @@ configure_file(input : 'src/config.h.in',
                configuration : conf_data)
 
 # external dependencies
-sdl2_dep    = dependency('sdl2')
-threads_dep = dependency('threads')
+sdl2_dep       = dependency('sdl2')
+threads_dep    = dependency('threads')
+glib_dep       = dependency('glib-2.0', fallback : ['glib'])
+gthread_dep    = dependency('gthread-2.0', fallback : ['glib'])
+
+# FluidSynth subproject
+cmake = import('cmake')
+fluidsynth_opts = cmake.subproject_options()
+fluidsynth_opts.add_cmake_defines({
+'BUILD_SHARED_LIBS': 0,
+'CMAKE_BUILD_TYPE': 'Release',
+'GLIB_LIBRARY_DIR': '../glib/lib',
+'GLIB_INCLUDE_DIR': '../glib/include',
+'GTHREAD_LIBRARY_DIR': '../glib/lib',
+'GTHREAD_INCLUDE_DIR': '../glib/include',
+'enable-alsa': 0,
+'enable-aufile': 0,
+'enable-coreaudio': 0,
+'enable-coremidi': 0,
+'enable-bus': 0,
+'enable-dsound': 0,
+'enable-floats': 1,
+'enable-ipv6': 0,
+'enable-jack': 0,
+'enable-libsndfile': 0,
+'enable-midishare': 0,
+'enable-network': 0,
+'enable-oss': 0,
+'enable-portaudio': 0,
+'enable-pulseaudio': 0,
+'enable-readline': 0,
+'enable-sdl2': 0,
+'enable-waveout': 0,
+'enable-winmidi': 0})
+fluidsynth_proj = cmake.subproject('fluidsynth', options: fluidsynth_opts)
+# fluidsynth_alt = fluidsynth_proj.get_variable('fluidsynth_dep')
+
+# fluidsynth_dep = dependency('fluidsynth', version : '>=2', fallback : ['fluidsynth', 'fluidsynth_dep'])
 
 # includes
 incdir = include_directories('include', '.')
@@ -54,6 +90,11 @@ executable('dosbox',
            dependencies : [
 	     sdl2_dep,
 	     threads_dep,
+	     glib_dep,
+	     gthread_dep,
+# fluidsynth_proj,
+#	     fluidsynth_dep,
+#	     opusfile_dep,
 	     libcpu_dep,
 	     libgui_dep,
 	     libhardware_dep,
