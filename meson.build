@@ -18,6 +18,7 @@ incdir = include_directories('include', '.')
 # bundled dependencies
 subdir('src/libs/decoders')
 subdir('src/libs/nuked')
+subdir('src/libs/ppscale')
 
 # subdirs
 subdir('src/cpu')
@@ -34,6 +35,7 @@ subdir('src/shell')
 # bundled dependencies
 libdecoders_dep = declare_dependency(link_with : libdecoders)
 libnuked_dep    = declare_dependency(link_with : libnuked)
+libppscale_dep  = declare_dependency(link_with : libppscale)
 
 # internal libs
 libcpu_dep      = declare_dependency(link_with : libcpu)
