@@ -11,7 +11,9 @@
 #include "logging.h"
 #include "midi.h"
 
-int main()
+int sdl_main(int argc, char *argv[]);
+
+int main(int argc, char *argv[])
 {
 	printf("program version: %s\n", VERSION);
 
@@ -28,6 +30,7 @@ int main()
 	printf("SDL (linked):    %d.%d.%d\n", linked.major, linked.minor,
 	       linked.patch);
 
+#if 0
 	// C library test
 	opl3_chip chip = {};
 	OPL3_Reset(&chip, 0);
@@ -36,12 +39,15 @@ int main()
 	const std::string home = to_native_path("~");
 
 	// code in midi test
-	// MIDI_ListAll(nullptr);
+	MIDI_ListAll(nullptr);
 	
 	// code in hardware test
 	Envelope("foobar");
+#endif
+
+	sdl_main(argc, argv);
 
 	// code in gui test
-	LOG_MSG("Bye!\n");
+	LOG_MSG("Bye!");
 	return 0;
 }

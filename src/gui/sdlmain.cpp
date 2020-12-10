@@ -3204,7 +3204,8 @@ void OverrideWMClass()
 }
 
 //extern void UI_Init(void);
-int main(int argc, char* argv[]) {
+// int main(int argc, char* argv[]) {
+int sdl_main(int argc, char* argv[]) {
 	int rcode = 0; // assume good until proven otherwise
 	try {
 		Disable_OS_Scaling(); //Do this early on, maybe override it through some parameter.
