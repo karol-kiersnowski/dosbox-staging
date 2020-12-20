@@ -5,6 +5,8 @@ noinst_LIBRARIES = libserial.a
 libserial_a_SOURCES = \
 	directserial.cpp \
 	directserial.h \
+	fifo.cpp \
+	fifo.h \
 	libserial.cpp \
 	libserial.h \
 	misc_util.cpp \
