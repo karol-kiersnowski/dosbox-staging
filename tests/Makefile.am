@@ -14,7 +14,6 @@ tests_CXXFLAGS += -lgtest_main -lgtest -pthread
 endif
 
 tests_SOURCES = \
-	cfifo.cpp \
 	example.cpp \
 	fifo.cpp \
 	fs_utils.cpp \
