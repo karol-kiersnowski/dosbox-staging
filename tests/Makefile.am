@@ -14,8 +14,10 @@ tests_CXXFLAGS += -lgtest_main -lgtest -pthread
 endif
 
 tests_SOURCES = \
+	cfifo.cpp \
 	example.cpp \
 	fs_utils.cpp \
+	myfifo.cpp \
 	readerwritercircularbuffer.cpp \
 	setup.cpp \
 	soft_limiter.cpp \
