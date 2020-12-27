@@ -49,6 +49,11 @@
 #include "midi.h"
 #include "hardware.h"
 
+#ifdef C_NE2000
+//#include "ne2000.h"
+void NE2K_Init(Section* sec);
+#endif
+
 Config * control;
 MachineType machine;
 SVGACards svgaCard;
@@ -94,6 +99,9 @@ void TANDYSOUND_Init(Section*);
 void DISNEY_Init(Section*);
 void SERIAL_Init(Section*);
 
+#if C_PRINTER
+void PRINTER_Init(Section*);
+#endif
 
 #if C_IPX
 void IPX_Init(Section*);
@@ -427,6 +435,21 @@ void DOSBOX_Init(void) {
 	Pstring->Set_values(machines);
 	Pstring->Set_help("The type of machine DOSBox tries to emulate.");
 
+	Pint = secprop->Add_int("vmemsize", Property::Changeable::WhenIdle,4);
+	Pint->SetMinMax(0,8);
+	Pint->Set_help(
+		"Amount of video memory in megabytes.\n"
+		"  The maximum resolution and color depth the svga_s3 will be able to display\n"
+		"  is determined by this value.\n "
+		"  0: 512k (800x600  at 256 colors)\n"
+		"  1: 1024x768  at 256 colors or 800x600  at 64k colors\n"
+		"  2: 1600x1200 at 256 colors or 1024x768 at 64k colors or 640x480 at 16M colors\n"
+		"  4: 1600x1200 at 64k colors or 1024x768 at 16M colors\n"
+		"  8: up to 1600x1200 at 16M colors\n"
+		"For build engine games, use more memory than in the list above so it can\n"
+		"use triple buffering and thus won't flicker.\n"
+		);
+
 	Pstring = secprop->Add_path("captures",Property::Changeable::Always,"capture");
 	Pstring->Set_help("Directory where things like wave, midi, screenshot get captured.");
 
@@ -450,6 +473,7 @@ void DOSBOX_Init(void) {
 	secprop->AddInitFunction(&PROGRAMS_Init);
 	secprop->AddInitFunction(&TIMER_Init);//done
 	secprop->AddInitFunction(&CMOS_Init);//done
+	secprop->AddInitFunction(&VGA_Init);
 
 	const char *verbosity_choices[] = {"high",   "medium", "low",
 	                                   "quiet", "auto",   0};
@@ -532,11 +556,10 @@ void DOSBOX_Init(void) {
 	Pstring->Set_help("CPU Core used in emulation. auto will switch to dynamic if available and\n"
 		"appropriate.");
 
-	const char* cputype_values[] = { "auto", "386", "386_slow", "486_slow", "pentium_slow", "386_prefetch", 0};
-	Pstring = secprop->Add_string("cputype",Property::Changeable::Always,"auto");
+	const char* cputype_values[] = {"auto", "386", "486", "pentium", "386_prefetch", 0};
+	Pstring = secprop->Add_string("cputype",Property::Changeable::Always, "auto");
 	Pstring->Set_values(cputype_values);
-	Pstring->Set_help("CPU Type used in emulation. auto is the fastest choice.");
-
+	Pstring->Set_help("CPU Type used in emulation. auto emulates a 486 which tolerates Pentium instructions.");
 
 	Pmulti_remain = secprop->Add_multiremain("cycles",Property::Changeable::Always," ");
 	Pmulti_remain->Set_help(
@@ -569,7 +592,6 @@ void DOSBOX_Init(void) {
 	secprop->AddInitFunction(&FPU_Init);
 #endif
 	secprop->AddInitFunction(&DMA_Init);//done
-	secprop->AddInitFunction(&VGA_Init);
 	secprop->AddInitFunction(&KEYBOARD_Init);
 
 
@@ -717,8 +739,7 @@ void DOSBOX_Init(void) {
 	const char* oplmodes[] = {"auto", "cms", "opl2", "dualopl2", "opl3", "opl3gold", "none", 0};
 	Pstring = secprop->Add_string("oplmode", Property::Changeable::WhenIdle, "auto");
 	Pstring->Set_values(oplmodes);
-	Pstring->Set_help("Type of OPL emulation. On 'auto' the mode is determined by 'sbtype'.\n"
-	                  "All OPL modes are AdLib-compatible, except for 'cms'.");
+	Pstring->Set_help("Type of OPL emulation. On 'auto' the mode is determined by 'sbtype'.\n");
 
 	const char* oplemus[] = {"default", "compat", "fast", "mame", "nuked", 0};
 	Pstring = secprop->Add_string("oplemu", Property::Changeable::WhenIdle, "default");
@@ -881,6 +902,9 @@ void DOSBOX_Init(void) {
 	Pstring = secprop->Add_string("keyboardlayout",Property::Changeable::WhenIdle, "auto");
 	Pstring->Set_help("Language code of the keyboard layout (or none).");
 
+	Pint = secprop->Add_int("files",Property::Changeable::OnlyAtStart,127);
+	Pint->Set_help("Number of file handles available to DOS programs. (equivalent to \"files=\" in config.sys)");
+
 	// Mscdex
 	secprop->AddInitFunction(&MSCDEX_Init);
 	secprop->AddInitFunction(&DRIVES_Init);
@@ -890,6 +914,45 @@ void DOSBOX_Init(void) {
 	Pbool = secprop->Add_bool("ipx",Property::Changeable::WhenIdle, false);
 	Pbool->Set_help("Enable ipx over UDP/IP emulation.");
 #endif
+
+#ifdef C_NE2000
+	secprop=control->AddSection_prop("ne2000",&NE2K_Init,true);
+	MSG_Add("NE2000_CONFIGFILE_HELP",
+		"macaddr -- The physical address the emulator will use on your network.\n"
+		"           If you have multiple DOSBoxes running on your network,\n"
+		"           this has to be changed. Modify the last three number blocks.\n"
+		"           I.e. AC:DE:48:88:99:AB.\n"
+		"realnic -- Specifies which of your network interfaces is used.\n"
+		"           Write \'list\' here to see the list of devices in the\n"
+		"           Status Window. Then make your choice and put either the\n"
+		"           interface number (2 or something) or a part of your adapters\n"
+		"           name, e.g. VIA here.\n"
+
+	);
+
+	Pbool = secprop->Add_bool("ne2000", Property::Changeable::WhenIdle, true);
+	Pbool->Set_help("Enable Ethernet passthrough. Requires [Win]Pcap.");
+
+	Phex = secprop->Add_hex("nicbase", Property::Changeable::WhenIdle, 0x300);
+	Phex->Set_help("The base address of the NE2000 board.");
+
+	Pint = secprop->Add_int("nicirq", Property::Changeable::WhenIdle, 3);
+	Pint->Set_help("The interrupt it uses. Note serial2 uses IRQ3 as default.");
+
+	Pstring = secprop->Add_string("macaddr", Property::Changeable::WhenIdle,"AC:DE:48:88:99:AA");
+	Pstring->Set_help("The physical address the emulator will use on your network.\n"
+		"If you have multiple DOSBoxes running on your network,\n"
+		"this has to be changed for each. AC:DE:48 is an address range reserved for\n"
+		"private use, so modify the last three number blocks.\n"
+		"I.e. AC:DE:48:88:99:AB.");
+	
+	Pstring = secprop->Add_string("realnic", Property::Changeable::WhenIdle,"list");
+	Pstring->Set_help("Specifies which of your network interfaces is used.\n"
+		"Write \'list\' here to see the list of devices in the\n"
+		"Status Window. Then make your choice and put either the\n"
+		"interface number (2 or something) or a part of your adapters\n"
+		"name, e.g. VIA here.");
+#endif // C_NE2000
 //	secprop->AddInitFunction(&CREDITS_Init);
 
 	//TODO ?

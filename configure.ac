@@ -581,6 +581,20 @@ else
    AC_MSG_RESULT(no)
 fi
 
+
+dnl Ethernet support
+dnl ----------------
+AH_TEMPLATE(C_NE2000,[Define to 1 to enable NE2000 ethernet passthrough, requires libpcap])
+AC_CHECK_HEADER(pcap.h,have_pcap_h=yes,)
+AC_CHECK_LIB(pcap, pcap_open_live, have_pcap_lib=yes, ,-lz)
+if test x$have_pcap_lib = xyes -a x$have_pcap_h = xyes ; then
+  LIBS="$LIBS -lpcap";
+  AC_DEFINE(C_NE2000,1)
+else
+  AC_MSG_WARN([Can't find libpcap, NE2000 ethernet passthrough disabled])
+fi
+
+
 dnl Unit Tests
 dnl ----------
 dnl 

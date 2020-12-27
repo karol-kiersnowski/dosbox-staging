@@ -30,6 +30,7 @@ noinst_HEADERS = \
 	midi.h \
 	mixer.h \
 	mouse.h \
+	ne2000.h \
 	paging.h \
 	pci_bus.h \
 	pic.h \
