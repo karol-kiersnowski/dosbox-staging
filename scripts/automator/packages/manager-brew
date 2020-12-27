@@ -1,3 +1,5 @@
 # Package repo: https://formulae.brew.sh/
 delim="@"
-packages+=(ccache coreutils autogen autoconf automake make pkg-config libpng ncurses sdl2 sdl2_net opusfile fluid-synth)
+packages+=(ccache coreutils autogen autoconf automake make
+           pkg-config libpng ncurses sdl2 sdl2_net opusfile
+           fluid-synth libpcap)

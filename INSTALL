@@ -49,6 +49,11 @@ SDL_net (optional)
     Get it from https://www.libsdl.org/projects/SDL_net/
     License: zlib
 
+Libpcap (optional)
+    For Ethernet NE2000 support
+    Get it from https://www.tcpdump.org/
+    License: three-clause BSD
+
 alsa-lib (mandatory, Linux only)
     For ALSA audio support under linux.
     See https://www.alsa-project.org/
