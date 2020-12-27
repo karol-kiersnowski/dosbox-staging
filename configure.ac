@@ -55,14 +55,18 @@ CPPFLAGS="$CPPFLAGS $SDL_CFLAGS"
 
 AH_TEMPLATE(C_MODEM,[Define to 1 to enable internal modem support, requires SDL2_net])
 AH_TEMPLATE(C_IPX,[Define to 1 to enable IPX over Internet networking, requires SDL2_net])
+AH_TEMPLATE(C_NE2000,[Define to 1 to enable NE2000 Ethernet support, requires libpcap])
 AC_ARG_ENABLE(network,
               AS_HELP_STRING([--disable-network],
-                             [Disable networking features (modem, ipx)]),,
+                             [Disable networking features (modem, ipx, ne2000)]),,
               enable_network=yes)
-AC_CHECK_HEADER(SDL_net.h, have_sdl_net_h=yes,)
-AC_CHECK_LIB(SDL2_net, SDLNet_Init, have_sdl_net_lib=yes, , )
-AC_MSG_CHECKING([whether networking features will be enabled])
 if test x$enable_network = xyes ; then
+
+  dnl modem and IPX support
+  dnl ---------------------
+  AC_CHECK_HEADER(SDL_net.h, have_sdl_net_h=yes,)
+  AC_CHECK_LIB(SDL2_net, SDLNet_Init, have_sdl_net_lib=yes, , )
+  AC_MSG_CHECKING([whether modem and IPX will be enabled (needs SDL2_net)])
   if test x$have_sdl_net_lib = xyes -a x$have_sdl_net_h = xyes ; then
     libtype=""
     if test x$enable_sdl_static = xyes ; then
@@ -90,11 +94,25 @@ if test x$enable_network = xyes ; then
       ;;
     esac
   else
-    AC_MSG_WARN([Can't find SDL2_net, internal modem and ipx disabled])
+    AC_MSG_RESULT([no])
+  fi
+
+  dnl NE2000 Ethernet support
+  dnl -----------------------
+  AC_CHECK_HEADER(pcap.h,have_pcap_h=yes,)
+  AC_CHECK_LIB(pcap, pcap_open_live, have_pcap_lib=yes, ,-lz)
+  AC_MSG_CHECKING([whether NE2000 Ethernet support will be enabled (needs pcap)])
+  if test x$have_pcap_lib = xyes -a x$have_pcap_h = xyes ; then
+    LIBS="$LIBS -lpcap";
+    AC_DEFINE(C_NE2000,1)
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
   fi
 else
-  AC_MSG_RESULT([no])
+  AC_MSG_NOTICE([Networking features explicitly disabled])
 fi
+
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -579,19 +597,6 @@ case "$host" in
 esac
 else
    AC_MSG_RESULT(no)
-fi
-
-
-dnl Ethernet support
-dnl ----------------
-AH_TEMPLATE(C_NE2000,[Define to 1 to enable NE2000 ethernet passthrough, requires libpcap])
-AC_CHECK_HEADER(pcap.h,have_pcap_h=yes,)
-AC_CHECK_LIB(pcap, pcap_open_live, have_pcap_lib=yes, ,-lz)
-if test x$have_pcap_lib = xyes -a x$have_pcap_h = xyes ; then
-  LIBS="$LIBS -lpcap";
-  AC_DEFINE(C_NE2000,1)
-else
-  AC_MSG_WARN([Can't find libpcap, NE2000 ethernet passthrough disabled])
 fi
 
 
