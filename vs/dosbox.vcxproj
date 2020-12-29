@@ -361,6 +361,8 @@
     <ClCompile Include="..\src\midi\midi.cpp" />
     <ClCompile Include="..\src\midi\midi_fluidsynth.cpp" />
     <ClCompile Include="..\src\misc\cross.cpp" />
+    <ClCompile Include="..\src\misc\ethernet.cpp" />
+    <ClCompile Include="..\src\misc\ethernet_slirp.cpp" />
     <ClCompile Include="..\src\misc\fs_utils_win32.cpp" />
     <ClCompile Include="..\src\misc\messages.cpp" />
     <ClCompile Include="..\src\misc\programs.cpp" />
@@ -390,6 +392,7 @@
     <ClInclude Include="..\include\dos_system.h" />
     <ClInclude Include="..\include\drives.h" />
     <ClInclude Include="..\include\envelope.h" />
+    <ClInclude Include="..\include\ethernet.h" />
     <ClInclude Include="..\include\fpu.h" />
     <ClInclude Include="..\include\fs_utils.h" />
     <ClInclude Include="..\include\hardware.h" />
@@ -493,6 +496,8 @@
     <ClInclude Include="..\src\midi\midi_fluidsynth.h" />
     <ClInclude Include="..\src\midi\midi_handler.h" />
     <ClInclude Include="..\src\midi\midi_win32.h" />
+    <ClInclude Include="..\src\misc\ethernet.h" />
+    <ClInclude Include="..\src\misc\ethernet_slirp.h" />
     <ClInclude Include="..\src\platform\visualc\config.h" />
     <ClInclude Include="..\src\platform\visualc\unistd.h" />
   </ItemGroup>

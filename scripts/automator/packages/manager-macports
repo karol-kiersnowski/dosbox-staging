@@ -2,4 +2,4 @@
 delim=""
 packages+=(ccache coreutils autogen autoconf automake pkgconfig
            libpng ncurses libsdl2 libsdl2_net opusfile fluidsynth
-           libpcap)
+           libslirp)

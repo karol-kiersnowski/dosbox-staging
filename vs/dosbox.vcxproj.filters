@@ -358,6 +358,12 @@
     <ClCompile Include="..\src\misc\cross.cpp">
       <Filter>src\misc</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\misc\ethernet.cpp">
+      <Filter>src\misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\misc\ethernet_slirp.cpp">
+      <Filter>src\misc</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\misc\messages.cpp">
       <Filter>src\misc</Filter>
     </ClCompile>
@@ -442,6 +448,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\envelope.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ethernet.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fpu.h">
@@ -739,6 +748,12 @@
       <Filter>src\midi</Filter>
     </ClInclude>
     <ClInclude Include="..\src\midi\midi_handler.h">
+      <Filter>src\midi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\misc\ethernet.h">
+      <Filter>src\midi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\misc\ethernet_slirp.h">
       <Filter>src\midi</Filter>
     </ClInclude>
     <ClInclude Include="..\include\compiler.h">

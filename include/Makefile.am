@@ -14,6 +14,7 @@ noinst_HEADERS = \
 	dosbox.h \
 	drives.h \
 	envelope.h \
+	ethernet.h \
 	fpu.h \
 	fs_utils.h \
 	hardware.h \
