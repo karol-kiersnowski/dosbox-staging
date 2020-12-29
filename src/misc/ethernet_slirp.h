@@ -20,8 +20,6 @@
 
 #include "config.h"
 
-#if C_SLIRP
-
 #include "ethernet.h"
 #include <slirp/libslirp.h>
 
@@ -34,12 +32,12 @@ struct slirp_timer {
 
 class SlirpEthernetConnection : public EthernetConnection {
 	public:
-		SlirpEthernetConnection(void);
-		~SlirpEthernetConnection(void);
-		bool Start(void);
-		void Send_Packet(Bit8u* packet, int len);
-		void Receive_Packet(Bit8u* packet, int len);
-		void Get_Packets(std::function<void(Bit8u*, int)> callback);
+		SlirpEthernetConnection();
+		~SlirpEthernetConnection();
+		bool Initialize();
+		void SendPacket(uint8_t* packet, int len);
+		void Receive_Packet(uint8_t* packet, int len);
+		void GetPackets(std::function<void(uint8_t*, int)> callback);
 
 		struct slirp_timer* Timer_New(SlirpTimerCb cb, void *cb_opaque);
 		void Timer_Free(struct slirp_timer* timer);
@@ -49,16 +47,14 @@ class SlirpEthernetConnection : public EthernetConnection {
 		int Poll_Get_Slirp_Revents(int idx);
 
 	private:
-		void Timers_Run(void);
-		void Polls_Clear(void);
+		void Timers_Run();
+		void Polls_Clear();
 
 		struct slirp_timer timers[256] = { 0 };
 		Slirp* slirp = nullptr;
 		SlirpConfig config = { 0 };
 		SlirpCb slirp_callbacks = { 0 };
-		std::function<void(Bit8u*, int)> get_packet_callback;
+		std::function<void(uint8_t*, int)> get_packet_callback;
 };
-
-#endif
 
 #endif

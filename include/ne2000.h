@@ -42,16 +42,16 @@
 #  define BX_NE2K_SMF
 #  define BX_NE2K_THIS_PTR 
 #  define BX_NE2K_THIS	
-#define BX_INFO 
+// #define BX_INFO 
 //LOG_MSG
-#define BX_DEBUG 
+// #define BX_DEBUG 
 //LOG_MSG
 
 #define  BX_NE2K_MEMSIZ    (32*1024)
 #define  BX_NE2K_MEMSTART  (16*1024)
 #define  BX_NE2K_MEMEND    (BX_NE2K_MEMSTART + BX_NE2K_MEMSIZ)
 
-typedef struct {
+struct bx_ne2k_t {
   //
   // ne2k register state
    
@@ -195,9 +195,8 @@ typedef struct {
   int    tx_timer_active;
 
   void register_state(bx_param_c *list_p);
-  
-} bx_ne2k_t;
 
+};
 
 
 class bx_ne2k_c  {

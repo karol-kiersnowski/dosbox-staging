@@ -17,8 +17,6 @@
 
 #include "config.h"
 
-#if C_SLIRP
-
 #include "ethernet_slirp.h"
 #include <time.h>
 #include "dosbox.h"
@@ -26,6 +24,7 @@
 #ifdef WIN32
 #include <ws2tcpip.h>
 #else
+#include <poll.h>
 #include <arpa/inet.h>
 #endif
 
@@ -92,7 +91,7 @@ void slirp_notify(void *opaque)
 	return;
 }
 
-SlirpEthernetConnection::SlirpEthernetConnection(void)
+SlirpEthernetConnection::SlirpEthernetConnection()
       : EthernetConnection()
 {
 	slirp_callbacks.send_packet = slirp_send_packet;
@@ -106,12 +105,12 @@ SlirpEthernetConnection::SlirpEthernetConnection(void)
 	slirp_callbacks.notify = slirp_notify;
 }
 
-SlirpEthernetConnection::~SlirpEthernetConnection(void)
+SlirpEthernetConnection::~SlirpEthernetConnection()
 {
 	if(slirp) slirp_cleanup(slirp);
 }
 
-bool SlirpEthernetConnection::Start(void)
+bool SlirpEthernetConnection::Initialize()
 {
 	/* Config */
 	config.version = 1;
@@ -154,7 +153,7 @@ bool SlirpEthernetConnection::Start(void)
 	}
 }
 
-void SlirpEthernetConnection::Send_Packet(Bit8u* packet, int len)
+void SlirpEthernetConnection::SendPacket(Bit8u* packet, int len)
 {
 	slirp_input(slirp, packet, len);
 }
@@ -164,7 +163,7 @@ void SlirpEthernetConnection::Receive_Packet(Bit8u* packet, int len)
 	get_packet_callback(packet, len);
 }
 
-void SlirpEthernetConnection::Get_Packets(std::function<void(Bit8u*, int)> callback)
+void SlirpEthernetConnection::GetPackets(std::function<void(Bit8u*, int)> callback)
 {
 	get_packet_callback = callback;
 	uint32_t timeout = 0;
@@ -248,5 +247,3 @@ void SlirpEthernetConnection::Polls_Clear(void)
 		//polls[i].events = 0;
 	}
 }
-
-#endif

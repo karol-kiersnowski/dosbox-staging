@@ -48,9 +48,7 @@ class EthernetConnection
          * The destructor will close the connection and free any
          * per-connection resources.
          */
-        virtual ~EthernetConnection(void)
-        {
-        }
+        virtual ~EthernetConnection(void) = 0;
 
         /** Sends a packet through the connection.
          * This function makes no guarantees as to whether the packet actually

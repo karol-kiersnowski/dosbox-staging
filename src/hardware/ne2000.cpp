@@ -1,5 +1,7 @@
 #include "config.h"
 
+#if C_NE2000
+
 #include "dosbox.h"
 #include <string.h>
 #include <stdio.h>
@@ -52,62 +54,29 @@ EthernetConnection* ethernet = nullptr;
 
 static void NE2000_TX_Event(Bitu val);
 
+#define BX_DEBUG 
+#define BX_INFO LOG_MSG
+#define BX_ERROR LOG_MSG
+// #define BX_PANIC 
+
 //Never completely fill the ne2k ring so that we never
 // hit the unclear completely full buffer condition.
 #define BX_NE2K_NEVER_FULL_RING (1)
-
-#define LOG_THIS theNE2kDevice->
-//#define BX_DEBUG 
-//#define BX_INFO 
 #define BX_NULL_TIMER_HANDLE 0
-//#define BX_PANIC 
-//#define BX_ERROR 
 #define BX_RESET_HARDWARE 0
 #define BX_RESET_SOFTWARE 1
 
 static char bxtmp[1024];
 
-static inline void BX_INFO(const char *msg,...) {
+static void BX_PANIC(const char *msg,...) {
     va_list va;
 
     va_start(va,msg);
     vsnprintf(bxtmp,sizeof(bxtmp)-1,msg,va);
     va_end(va);
 
-    LOG(LOG_MISC,LOG_NORMAL)("BX_INFO: %s",bxtmp);
-}
-
-static inline void BX_DEBUG(const char *msg,...) {
-    if (false/*TOO MUCH DEBUG INFO*/) {
-        va_list va;
-
-        va_start(va,msg);
-        vsnprintf(bxtmp,sizeof(bxtmp)-1,msg,va);
-        va_end(va);
-
-        LOG(LOG_MISC,LOG_DEBUG)("BX_DEBUG: %s",bxtmp);
-    }
-}
-
-static inline void BX_ERROR(const char *msg,...) {
-    va_list va;
-
-    va_start(va,msg);
-    vsnprintf(bxtmp,sizeof(bxtmp)-1,msg,va);
-    va_end(va);
-
-    LOG_MSG("BX_ERROR: %s",bxtmp);
-}
-
-static inline void BX_PANIC(const char *msg,...) {
-    va_list va;
-
-    va_start(va,msg);
-    vsnprintf(bxtmp,sizeof(bxtmp)-1,msg,va);
-    va_end(va);
-
-    LOG_MSG("BX_PANIC: %s",bxtmp);
-    E_Exit("BX_PANIC condition");
+    LOG_MSG("NE2000: PANIC: %s",bxtmp);
+    E_Exit("NE2000: PANIC condition");
 }
 
 bx_ne2k_c* theNE2kDevice = NULL;
@@ -1526,7 +1495,7 @@ public:
 				dosbox_write,IO_MB|IO_MW);
 		}
 		TIMER_AddTickHandler(NE2000_Poller);
-	}	
+	}
 	
 	~NE2K() {
 		if(ethernet != 0) delete ethernet;
@@ -1538,33 +1507,70 @@ public:
 	}	
 };
 
-static NE2K* test = NULL;
+static std::unique_ptr<NE2K> test = nullptr;
 
-void NE2K_ShutDown(Section* sec) {
-    (void)sec;//UNUSED
-	if (test) {
-        delete test;	
-        test = NULL;
-    }
+static void ne2k_destroy(MAYBE_UNUSED Section* sec) {
+	if (test)
+		test.reset(nullptr);
 }
 
-void NE2K_OnReset(Section* sec) {
-    (void)sec;//UNUSED
-	if (test == NULL && !IS_PC98_ARCH) {
-		LOG(LOG_MISC,LOG_DEBUG)("Allocating NE2000 emulation");
-		test = new NE2K(control->GetSection("ne2000"));
+static void ne2k_init(Section *sec)
+{
+	assert(sec);
+	const Section_prop *conf = dynamic_cast<Section_prop *>(sec);
 
-		if (!test->load_success) {
-			LOG(LOG_MISC,LOG_DEBUG)("Sorry, NE2000 allocation failed to load");
-			delete test;
-			test = NULL;
-		}
-	}
+  test = std::make_unique<NE2K>(sec);
+  LOG_MSG("NE2000: initialized NE2000 Ethernet card");
+  sec->AddDestroyFunction(&ne2k_destroy, true);
 }
 
-void NE2K_Init() {
-	LOG(LOG_MISC,LOG_DEBUG)("Initializing NE2000 network card emulation");
+void init_ne2k_dosbox_settings(Section_prop &secprop)
+{
+	constexpr auto when_idle = Property::Changeable::WhenIdle;
 
-	AddExitFunction(AddExitFunctionFuncPair(NE2K_ShutDown),true);
-	AddVMEventFunction(VM_EVENT_RESET,AddVMEventFunctionFuncPair(NE2K_OnReset));
+	MSG_Add("NE2000_CONFIGFILE_HELP",
+		"macaddr -- The physical address the emulator will use on your network.\n"
+		"           If you have multiple DOSBoxes running on your network,\n"
+		"           this has to be changed. Modify the last three number blocks.\n"
+		"           I.e. AC:DE:48:88:99:AB.\n"
+		"realnic -- Specifies which of your network interfaces is used.\n"
+		"           Write \'list\' here to see the list of devices in the\n"
+		"           Status Window. Then make your choice and put either the\n"
+		"           interface number (2 or something) or a part of your adapters\n"
+		"           name, e.g. VIA here.\n"
+
+	);
+
+	auto *bool_prop = secprop.Add_bool("ne2000", when_idle, true);
+	bool_prop->Set_help("Enable Ethernet passthrough. Requires [Win]Pcap.");
+
+	auto *hex_prop = secprop.Add_hex("nicbase", when_idle, 0x300);
+	hex_prop->Set_help("The base address of the NE2000 board.");
+
+	auto *int_prop =  secprop.Add_int("nicirq", when_idle, 3);
+	int_prop->Set_help("The interrupt it uses. Note serial2 uses IRQ3 as default.");
+
+	auto *str_prop  = secprop.Add_string("macaddr", when_idle,"AC:DE:48:88:99:AA");
+	str_prop->Set_help("The physical address the emulator will use on your network.\n"
+		"If you have multiple DOSBoxes running on your network,\n"
+		"this has to be changed for each. AC:DE:48 is an address range reserved for\n"
+		"private use, so modify the last three number blocks.\n"
+		"I.e. AC:DE:48:88:99:AB.");
+	
+	str_prop = secprop.Add_string("realnic", when_idle,"list");
+	str_prop->Set_help("Specifies which of your network interfaces is used.\n"
+		"Write \'list\' here to see the list of devices in the\n"
+		"Status Window. Then make your choice and put either the\n"
+		"interface number (2 or something) or a part of your adapters\n"
+		"name, e.g. VIA here.");
 }
+
+void NE2K_AddConfigSection(Config *conf)
+{
+	assert(conf);
+	Section_prop *sec = conf->AddSection_prop("ne2000", &ne2k_init);
+	assert(sec);
+	init_ne2k_dosbox_settings(*sec);
+}
+
+#endif

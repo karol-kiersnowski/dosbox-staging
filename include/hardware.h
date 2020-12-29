@@ -55,4 +55,8 @@ class Config;
 // Gravis UltraSound configuration and initialization
 void GUS_AddConfigSection(Config *conf);
 
+#if C_NE2000
+void NE2K_AddConfigSection(Config *conf);
+#endif
+
 #endif
