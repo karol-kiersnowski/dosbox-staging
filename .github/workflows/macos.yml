@@ -52,7 +52,7 @@ jobs:
 
   build_macos_release:
     name: Release build
-    runs-on: macos-latest
+    runs-on: macos-10.14
     if: github.event_name != 'pull_request' || contains('dreamer,kcgen,ant-222,Wengier', github.actor) == false
     env:
       CC: ccache clang
