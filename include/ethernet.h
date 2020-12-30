@@ -29,48 +29,47 @@
  * The EthernetConnection class provides a virtual connection for passing
  * packets to and from a backend, intended for use by emulated adapter code.
  */
-class EthernetConnection
-{
-    public:
-        /** Initializes the connection.
-         * After creating an EthernetConnection, it must have its connection
-         * opened and initialized before further use.
-         * This is done in a separate function instead of a constructor so any
-         * error code may be propagated.
-         * Do not call this function twice.
-         * @return True if the connection is initialized, false otherwise
-         */
-        virtual bool Initialize(void) = 0;
+class EthernetConnection {
+public:
+	/** Initializes the connection.
+	 * After creating an EthernetConnection, it must have its connection
+	 * opened and initialized before further use.
+	 * This is done in a separate function instead of a constructor so any
+	 * error code may be propagated.
+	 * Do not call this function twice.
+	 * @return True if the connection is initialized, false otherwise
+	 */
+	virtual bool Initialize(void) = 0;
 
-        /** Closes the connection.
-         * Owners of an EthernetConnection are expected to delete it when
-         * finished with the connection.
-         * The destructor will close the connection and free any
-         * per-connection resources.
-         */
-        virtual ~EthernetConnection(void) = 0;
+	/** Closes the connection.
+	 * Owners of an EthernetConnection are expected to delete it when
+	 * finished with the connection.
+	 * The destructor will close the connection and free any
+	 * per-connection resources.
+	 */
+	virtual ~EthernetConnection(void) = 0;
 
-        /** Sends a packet through the connection.
-         * This function makes no guarantees as to whether the packet actually
-         * gets stored or sent anywhere. Errors are not propagated from
-         * the concrete implementation of the connection.
-         * This matches the lossy nature of sending packets through hardware.
-         * @param packet A pointer to bytes of an Ethernet frame
-         * @param size The size (in bytes) of the Ethernet frame
-         */
-        virtual void SendPacket(uint8_t* packet, int size) = 0;
+	/** Sends a packet through the connection.
+	 * This function makes no guarantees as to whether the packet actually
+	 * gets stored or sent anywhere. Errors are not propagated from
+	 * the concrete implementation of the connection.
+	 * This matches the lossy nature of sending packets through hardware.
+	 * @param packet A pointer to bytes of an Ethernet frame
+	 * @param size The size (in bytes) of the Ethernet frame
+	 */
+	virtual void SendPacket(uint8_t *packet, int size) = 0;
 
-        /** Gets all pending packets from the connection.
-         * This function passes each pending packet to the callback function.
-         * The callback provides a pointer to the bytes of an Ethernet frame,
-         * and the size (in bytes) of the Ethernet frame.
-         * Using a lambda for std::function allows easy looping over GetPackets
-         * instead of jumping around between functions and sharing global state.
-         * This function does not define the state of the packet data outside
-         * the callback. Copy the packet data if you need to use it later.
-         * @param callback The function called for each pending packet
-         */
-        virtual void GetPackets(std::function<void(uint8_t*, int)> callback) = 0;
+	/** Gets all pending packets from the connection.
+	 * This function passes each pending packet to the callback function.
+	 * The callback provides a pointer to the bytes of an Ethernet frame,
+	 * and the size (in bytes) of the Ethernet frame.
+	 * Using a lambda for std::function allows easy looping over GetPackets
+	 * instead of jumping around between functions and sharing global state.
+	 * This function does not define the state of the packet data outside
+	 * the callback. Copy the packet data if you need to use it later.
+	 * @param callback The function called for each pending packet
+	 */
+	virtual void GetPackets(std::function<void(uint8_t *, int)> callback) = 0;
 };
 
 /** Opens a virtual Ethernet connection to a backend.
@@ -84,6 +83,6 @@ class EthernetConnection
  * @param backend The name of the connection backend
  * @return An initialized Ethernet connection, nullptr otherwise
  */
-EthernetConnection* OpenEthernetConnection(const char* backend);
+EthernetConnection *OpenEthernetConnection(const char *backend);
 
 #endif

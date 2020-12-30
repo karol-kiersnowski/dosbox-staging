@@ -914,7 +914,7 @@ void DOSBOX_Init(void) {
 	NE2K_AddConfigSection(control);
 #endif
 
-//	secprop->AddInitFunction(&CREDITS_Init);
+	//	secprop->AddInitFunction(&CREDITS_Init);
 
 	//TODO ?
 	control->AddSection_line("autoexec", &AUTOEXEC_Init);

@@ -31,30 +31,30 @@ struct slirp_timer {
 };
 
 class SlirpEthernetConnection : public EthernetConnection {
-	public:
-		SlirpEthernetConnection();
-		~SlirpEthernetConnection();
-		bool Initialize();
-		void SendPacket(uint8_t* packet, int len);
-		void Receive_Packet(uint8_t* packet, int len);
-		void GetPackets(std::function<void(uint8_t*, int)> callback);
+public:
+	SlirpEthernetConnection();
+	~SlirpEthernetConnection();
+	bool Initialize();
+	void SendPacket(uint8_t *packet, int len);
+	void Receive_Packet(uint8_t *packet, int len);
+	void GetPackets(std::function<void(uint8_t *, int)> callback);
 
-		struct slirp_timer* Timer_New(SlirpTimerCb cb, void *cb_opaque);
-		void Timer_Free(struct slirp_timer* timer);
-		void Timer_Mod(struct slirp_timer* timer, int64_t expire_time);
+	struct slirp_timer *Timer_New(SlirpTimerCb cb, void *cb_opaque);
+	void Timer_Free(struct slirp_timer *timer);
+	void Timer_Mod(struct slirp_timer *timer, int64_t expire_time);
 
-		int Poll_Add(int fd, int slirp_events);
-		int Poll_Get_Slirp_Revents(int idx);
+	int Poll_Add(int fd, int slirp_events);
+	int Poll_Get_Slirp_Revents(int idx);
 
-	private:
-		void Timers_Run();
-		void Polls_Clear();
+private:
+	void Timers_Run();
+	void Polls_Clear();
 
-		struct slirp_timer timers[256] = { 0 };
-		Slirp* slirp = nullptr;
-		SlirpConfig config = { 0 };
-		SlirpCb slirp_callbacks = { 0 };
-		std::function<void(uint8_t*, int)> get_packet_callback;
+	struct slirp_timer timers[256] = {0};
+	Slirp *slirp = nullptr;
+	SlirpConfig config = {0};
+	SlirpCb slirp_callbacks = {0};
+	std::function<void(uint8_t *, int)> get_packet_callback;
 };
 
 #endif

@@ -1,4 +1,4 @@
-/* 
+/*
  *  Copyright (C) 2020  The DOSBox Team
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -23,13 +23,12 @@
 EthernetConnection::~EthernetConnection()
 {}
 
-EthernetConnection* OpenEthernetConnection(const char* backend)
+EthernetConnection *OpenEthernetConnection(const char *backend)
 {
-    if (!strcmp(backend, "slirp"))
-    {
-        auto conn = new SlirpEthernetConnection;
-        return conn->Initialize() ? conn : nullptr;
-    }
-    LOG_MSG("ETHERNET: unknown backend: %s", backend);
-    return nullptr;
+	if (!strcmp(backend, "slirp")) {
+		auto conn = new SlirpEthernetConnection;
+		return conn->Initialize() ? conn : nullptr;
+	}
+	LOG_MSG("ETHERNET: unknown backend: %s", backend);
+	return nullptr;
 }
