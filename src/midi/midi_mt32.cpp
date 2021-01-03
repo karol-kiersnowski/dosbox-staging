@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <deque>
+#include <functional>
 #include <string>
 
 #include <SDL_endian.h>
@@ -42,20 +43,10 @@
 constexpr auto ANALOG_MODE = MT32Emu::AnalogOutputMode_ACCURATE;
 // DAC Emulation modes: NICE, PURE, GENERATION1, and GENERATION2
 constexpr auto DAC_MODE = MT32Emu::DACInputMode_NICE;
-// Render at least one video-frames worth of audio (1000 ms / 70 Hz = 14.2 ms)
-constexpr uint8_t RENDER_MIN_MS = 15;
-// Render up to three video-frames at most, capping latency to 45ms
-constexpr uint8_t RENDER_MAX_MS = RENDER_MIN_MS * 3;
 // Sample rate conversion quality: FASTEST, FAST, GOOD, BEST
 constexpr auto RATE_CONVERSION_QUALITY = MT32Emu::SamplerateConversionQuality_BEST;
 // Use improved amplitude ramp characteristics for sustaining instruments
 constexpr bool USE_NICE_RAMP = true;
-
-// mt32emu Constants
-// -----------------
-constexpr uint16_t MS_PER_S = 1000;
-constexpr uint8_t CH_PER_FRAME = 2; // left and right channels
-
 
 MidiHandler_mt32 mt32_instance;
 
@@ -298,64 +289,47 @@ bool MidiHandler_mt32::Open(MAYBE_UNUSED const char *conf)
 	mt32_service->setDACInputMode(DAC_MODE);
 	mt32_service->setNiceAmpRampEnabled(USE_NICE_RAMP);
 
-	static_assert(RENDER_MIN_MS <= RENDER_MAX_MS, "Incorrect rendering sizes");
-	static_assert(RENDER_MAX_MS <= 333,
-	              "Excessive latency, use a smaller duration");
-	stopProcessing = false;
-	playPos = 0;
-
-	// If the mixer's playback thread stalls waiting for the rendering thread
-	// to produce samples, then at a minimum we will RENDER_MIN_MS of audio.
-	minimumRenderFrames = static_cast<uint16_t>(RENDER_MIN_MS *
-	                                            sample_rate / MS_PER_S);
-
-	// Allow the rendering thread to synthesize up to RENDER_MAX_MS of audio
-	// (to keep the buffer topped-up).
-	framesPerAudioBuffer = static_cast<uint16_t>(RENDER_MAX_MS *
-	                                             sample_rate / MS_PER_S);
-	audioBuffer.resize(framesPerAudioBuffer * CH_PER_FRAME);
-		
-	// Ensure the buffer is bounded to the same type and size as the mixer's
-	// primary mixing buffer
-	assert(audioBuffer.size() <= UINT16_MAX &&
-	       audioBuffer.size() <= MIXER_BUFSIZE);
-
-	mt32_service->renderBit16s(audioBuffer.data(), framesPerAudioBuffer - 1);
-	renderPos = (framesPerAudioBuffer - 1) * CH_PER_FRAME;
-	playedBuffers = 1;
-	lock.reset(SDL_CreateMutex());
-	framesInBufferChanged.reset(SDL_CreateCond());
-	thread.reset(SDL_CreateThread(ProcessingThread, "mt32emu", nullptr));
-
 	service = std::move(mt32_service);
 	channel = std::move(mixer_channel);
+
+	// Start rendering thread
+	const auto render = std::bind(&MidiHandler_mt32::Render, this);
+	renderer = std::thread(render);
+
+	// Start playback
 	channel->Enable(true);
-	is_open = true;
 	return true;
+}
+
+MidiHandler_mt32::~MidiHandler_mt32()
+{
+	Close();
 }
 
 void MidiHandler_mt32::Close()
 {
-	if (!is_open)
-		return;
-	channel->Enable(false);
+	// Stop playback
+	if (channel)
+		channel->Enable(false);
 
-	stopProcessing = true;
-	SDL_LockMutex(lock.get());
-	SDL_CondSignal(framesInBufferChanged.get());
-	SDL_UnlockMutex(lock.get());
-	thread.reset();
-	lock.reset();
-	framesInBufferChanged.reset();
+	// Drain the ring
+	keep_rendering = false;
+	buffer_t discard_buffer;
+	while (ring.size_approx())
+		ring.wait_dequeue(discard_buffer);
 
-	service->closeSynth();
-	is_open = false;
+	// Stop rendering
+	if (renderer.joinable())
+		renderer.join();
+
+	// Stop the synthesizer
+	if (service)
+		service->closeSynth();
 }
 
 uint32_t MidiHandler_mt32::GetMidiEventTimestamp() const
 {
-	const uint32_t played_frames = playedBuffers * framesPerAudioBuffer;
-	const uint16_t current_frame = playPos / CH_PER_FRAME;
+	const uint32_t played_frames = played_buffers * FRAMES_PER_BUFFER;
 	return service->convertOutputToSynthTimestamp(played_frames + current_frame);
 }
 
@@ -372,96 +346,38 @@ void MidiHandler_mt32::PlaySysex(uint8_t *sysex, size_t len)
 	service->playSysexAt(sysex, msg_len, GetMidiEventTimestamp());
 }
 
-int MidiHandler_mt32::ProcessingThread(MAYBE_UNUSED void *data)
+uint16_t MidiHandler_mt32::GetAvailableFrames()
 {
-	mt32_instance.RenderingLoop();
-	return 0;
+	if (current_frame < FRAMES_PER_BUFFER)
+		return FRAMES_PER_BUFFER - current_frame; // still some left
+
+	ring.wait_dequeue(buffer);
+	// if (!ring.wait_dequeue_timed(buffer, 1000))
+	//	LOG_MSG("MT32: Renderer unable to keep up with playback!");
+	current_frame = 0;
+	played_buffers++;
+	return FRAMES_PER_BUFFER;
 }
 
-MidiHandler_mt32::~MidiHandler_mt32()
+void MidiHandler_mt32::MixerCallBack(uint16_t requested_frames)
 {
-	Close();
-}
-
-void MidiHandler_mt32::MixerCallBack(uint16_t frames)
-{
-	while (renderPos == playPos) {
-		SDL_LockMutex(lock.get());
-		SDL_CondWait(framesInBufferChanged.get(), lock.get());
-		SDL_UnlockMutex(lock.get());
-		if (stopProcessing)
-			return;
-	}
-	uint16_t cur_render_pos = renderPos;
-	uint16_t cur_play_pos = playPos;
-	const auto total_samples = static_cast<uint16_t>(audioBuffer.size());
-	const uint16_t unplayed_samples = (cur_render_pos < cur_play_pos)
-	                                          ? total_samples - cur_play_pos
-	                                          : cur_render_pos - cur_play_pos;
-	if (frames > (unplayed_samples / CH_PER_FRAME)) {
-		assert(unplayed_samples <= UINT16_MAX);
-		frames = unplayed_samples / CH_PER_FRAME;
-	}
-	channel->AddSamples_s16(frames, audioBuffer.data() + cur_play_pos);
-	cur_play_pos += (frames * CH_PER_FRAME);
-	while (total_samples <= cur_play_pos) {
-		cur_play_pos -= total_samples;
-		playedBuffers++;
-	}
-	playPos = cur_play_pos;
-	cur_render_pos = renderPos;
-	const uint16_t samplesFree = (cur_render_pos < cur_play_pos)
-	                                     ? cur_play_pos - cur_render_pos
-	                                     : total_samples + cur_play_pos -
-	                                               cur_render_pos;
-	if (minimumRenderFrames <= (samplesFree / CH_PER_FRAME)) {
-		SDL_LockMutex(lock.get());
-		SDL_CondSignal(framesInBufferChanged.get());
-		SDL_UnlockMutex(lock.get());
+	while (requested_frames) {
+		const auto available = GetAvailableFrames();
+		const auto played = std::min(requested_frames, available);
+		channel->AddSamples_s16(played, buffer.data() + current_frame * 2);
+		requested_frames -= played;
+		current_frame += played;
 	}
 }
 
-void MidiHandler_mt32::RenderingLoop()
+void MidiHandler_mt32::Render()
 {
-	while (!stopProcessing) {
-		const uint16_t cur_render_pos = renderPos;
-		const uint16_t cur_play_pos = playPos;
-
-		uint16_t samples_to_render = 0;
-		if (cur_render_pos < cur_play_pos) {
-			samples_to_render = cur_play_pos - cur_render_pos -
-			                    CH_PER_FRAME;
-		} else {
-			const auto total_samples = static_cast<uint16_t>(
-			        audioBuffer.size());
-			samples_to_render = total_samples - cur_render_pos;
-			if (cur_play_pos == 0) {
-				samples_to_render -= CH_PER_FRAME;
-			}
-		}
-		uint16_t frames_to_render = samples_to_render / CH_PER_FRAME;
-		if (frames_to_render == 0 || (frames_to_render < minimumRenderFrames &&
-		                              cur_render_pos < cur_play_pos)) {
-			SDL_LockMutex(lock.get());
-			SDL_CondWait(framesInBufferChanged.get(), lock.get());
-			SDL_UnlockMutex(lock.get());
-		} else {
-			service->renderBit16s(audioBuffer.data() + cur_render_pos,
-			                      frames_to_render);
-			renderPos = (cur_render_pos + samples_to_render) %
-			            audioBuffer.size();
-			if (cur_render_pos == playPos) {
-				SDL_LockMutex(lock.get());
-				SDL_CondSignal(framesInBufferChanged.get());
-				SDL_UnlockMutex(lock.get());
-			}
-		}
+	buffer_t b;
+	while (keep_rendering) {
+		service->renderBit16s(b.data(), FRAMES_PER_BUFFER);
+		ring.wait_enqueue(b);
+		// LOG_MSG("MT32: ring is %lu long", ring.size_approx());
 	}
-}
-
-void MidiHandler_mt32::DeleteThread(SDL_Thread *t)
-{
-	SDL_WaitThread(t, nullptr);
 }
 
 static void mt32_init(MAYBE_UNUSED Section *sec)
