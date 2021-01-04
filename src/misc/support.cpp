@@ -331,3 +331,53 @@ std::string safe_strerror(int err) noexcept
 	return buf;
 #endif
 }
+
+// Portable thread-naming wrapper for Posix, Linux, and Windows
+// Code authored by Mark Lakata: https://stackoverflow.com/a/23899379
+#ifdef _WIN32
+#include <windows.h>
+const DWORD MS_VC_EXCEPTION = 0x406D1388;
+
+#pragma pack(push, 8)
+typedef struct tagTHREADNAME_INFO {
+	DWORD dwType;     // Must be 0x1000.
+	LPCSTR szName;    // Pointer to name (in user addr space).
+	DWORD dwThreadID; // Thread ID (-1=caller thread).
+	DWORD dwFlags;    // Reserved for future use, must be zero.
+} THREADNAME_INFO;
+#pragma pack(pop)
+
+void set_thread_name(uint32_t dwThreadID, const char *threadName)
+{
+	// DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>(
+	// t.native_handle() ) );
+
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = threadName;
+	info.dwThreadID = dwThreadID;
+	info.dwFlags = 0;
+
+	__try {
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR),
+		               (ULONG_PTR *)&info);
+	} __except (EXCEPTION_EXECUTE_HANDLER) {
+	}
+}
+void set_thread_name(std::thread *thread, const char *threadName)
+{
+	DWORD threadId = ::GetThreadId(static_cast<HANDLE>(thread->native_handle()));
+	set_thread_name(threadId, threadName);
+}
+#elif HAVE_PTHREAD
+void set_thread_name(std::thread *thread, const char *threadName)
+{
+	auto handle = thread->native_handle();
+	pthread_setname_np(handle, threadName);
+}
+#else
+void set_thread_name(MAYBE_UNUSED std::thread *thread, MAYBE_UNUSED const char *threadName)
+{
+	// Do-nothing if platform can't name threads
+}
+#endif
