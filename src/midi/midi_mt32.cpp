@@ -295,6 +295,7 @@ bool MidiHandler_mt32::Open(MAYBE_UNUSED const char *conf)
 	// Start rendering thread
 	const auto render = std::bind(&MidiHandler_mt32::Render, this);
 	renderer = std::thread(render);
+	set_thread_name(&renderer, "dosbox-mt32emu");
 
 	// Start playback
 	channel->Enable(true);
