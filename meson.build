@@ -138,7 +138,7 @@ endif
 if get_option('use_png')
   png_dep = dependency('libpng', static : try_static,
                        not_found_message : msg.format('use_png'))
-  z_dep = dependency('zlib') # libpng in Ubuntu 16.04 needs zlib linked explicitly
+  z_dep = dependency('zlib', static : try_static) # libpng in Ubuntu 16.04 needs zlib linked explicitly
 endif
 
 if get_option('enable_debugger') != 'none'
