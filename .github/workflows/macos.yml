@@ -97,7 +97,7 @@ jobs:
 
       - name: Install C++ compiler and libraries
         # run:  brew install librsvg $(./scripts/list-build-dependencies.sh -m brew -c clang)
-        run:  brew install meson librsvg libiconv $(cat ./.github/packages/macos-brew.txt)
+        run:  brew install meson librsvg libiconv zlib $(cat ./.github/packages/macos-brew.txt)
 
       - name:  Prepare compiler cache
         id:    prep-ccache
