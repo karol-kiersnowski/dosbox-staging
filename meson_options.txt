@@ -34,3 +34,8 @@ option('dynamic_core',
        choices : ['auto', 'dyn-x86', 'dynrec', 'none'],
        value : 'auto',
        description : 'Select the dynamic core implementation.')
+
+option('try_full_static_build',
+       type : 'boolean',
+       value : false,
+       description : 'Attempt to statically link all dependencies')

@@ -99,9 +99,11 @@ endif
 
 # external dependencies
 #
+try_static = get_option('try_full_static_build')
+
 optional_dep  = dependency('', required : false)
 threads_dep   = dependency('threads')
-sdl2_dep      = dependency('sdl2', version : '>= 2.0.2')
+sdl2_dep      = dependency('sdl2', version : '>= 2.0.2', static : try_static)
 sdl2_net_dep  = optional_dep
 opengl_dep    = optional_dep
 fluid_dep     = optional_dep
@@ -115,7 +117,7 @@ coremidi_dep  = optional_dep # macOS only
 msg = 'You can disable this dependency with: -D@0@=false'
 
 if get_option('use_sdl2_net')
-  sdl2_net_dep = dependency('SDL2_net', version : '>= 2.0.1',
+  sdl2_net_dep = dependency('SDL2_net', version : '>= 2.0.1', static : try_static,
                             not_found_message : msg.format('use_sdl2_net'))
 endif
 
@@ -124,16 +126,18 @@ if get_option('use_opengl')
 endif
 
 if get_option('use_fluidsynth')
-  fluid_dep = dependency('fluidsynth', version : '>= 2.0.0',
+  fluid_dep = dependency('fluidsynth', version : '>= 2.0.0', static : try_static,
                          not_found_message : msg.format('use_fluidsynth'))
 endif
 
 if get_option('use_opusfile')
-  opus_dep = dependency('opusfile', not_found_message : msg.format('use_opusfile'))
+  opus_dep = dependency('opusfile', static : try_static,
+                        not_found_message : msg.format('use_opusfile'))
 endif
 
 if get_option('use_png')
-  png_dep = dependency('libpng', not_found_message : msg.format('use_png'))
+  png_dep = dependency('libpng', static : try_static,
+                       not_found_message : msg.format('use_png'))
   z_dep = dependency('zlib') # libpng in Ubuntu 16.04 needs zlib linked explicitly
 endif
 
