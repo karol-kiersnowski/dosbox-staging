@@ -1,4 +1,5 @@
 ccache
+coreutils
 fluid-synth
 libpng
 opusfile
