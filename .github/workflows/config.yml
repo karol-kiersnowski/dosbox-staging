@@ -23,9 +23,8 @@ jobs:
       max-parallel: 8
       matrix:
         system:
-          # - name: Windows
-          #   os: windows-latest
-          #   compiler: gcc
+          - name: Windows
+            os: windows-latest
           - name: macOS
             os: macos-latest
           - name: Linux
@@ -37,12 +36,12 @@ jobs:
           # - configure_flags:  --enable-sdl-static
           # - configure_flags:  --enable-png-static --enable-sdl-static
           - configure_flags:  -Duse_opengl=false
-          - configure_flags:  -Duse_fluidsynth=false
-          - configure_flags:  -Duse_opusfile=false
-          - configure_flags:  -Duse_png=false
-          - configure_flags:  -Ddynamic_core=dyn-x86
-          - configure_flags:  -Ddynamic_core=dynrec
-          - configure_flags:  -Ddynamic_core=none
+          # - configure_flags:  -Duse_fluidsynth=false
+          # - configure_flags:  -Duse_opusfile=false
+          # - configure_flags:  -Duse_png=false
+          # - configure_flags:  -Ddynamic_core=dyn-x86
+          # - configure_flags:  -Ddynamic_core=dynrec
+          # - configure_flags:  -Ddynamic_core=none
 
     env:
       CHERE_INVOKING: yes
@@ -78,7 +77,7 @@ jobs:
           steps.cache-msys2.outputs.cache-hit != 'true'
         shell: python scripts\msys-bash.py {0}
         run: |
-           scripts/list-build-dependencies.sh -m msys2 -c clang ${{ matrix.conf.without_packages }} | xargs pacman -S --noconfirm
+           cat .github/packages/windows-msys2.txt | xargs pacman -S --noconfirm
            .github/scripts/shrink-msys2.sh
 
       - name:  Install dependencies (Linux)
@@ -95,9 +94,14 @@ jobs:
       - name:  Build ${{ matrix.conf.configure_flags }} (Windows)
         if:    matrix.system.name == 'Windows'
         shell: python scripts\msys-bash.py {0}
-        run: >
-          scripts/build.sh -c ${{ matrix.system.compiler }} -t debug --bin-path /mingw64/bin
-          ${{ matrix.conf.configure_flags }} ${{ matrix.system.missing_packages }}
+        run: |
+          # scripts/build.sh -c ${{ matrix.system.compiler }} -t debug --bin-path /mingw64/bin
+          # ${{ matrix.conf.configure_flags }} ${{ matrix.system.missing_packages }}
+          meson setup \
+            --wrap-mode=nofallback ${{ matrix.conf.configure_flags }} \
+            build
+          cd build
+          ninja
 
       - name:  Build ${{ matrix.conf.configure_flags }} (macOS)
         if:    matrix.system.name == 'macOS'
