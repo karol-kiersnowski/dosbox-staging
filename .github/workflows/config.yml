@@ -1,7 +1,7 @@
 name: Config heavy
 
-on:
-  schedule: [cron: '0 16 * * *']
+on: [push]
+  # schedule: [cron: '0 16 * * *']
 
 jobs:
   repo-check:
@@ -23,39 +23,36 @@ jobs:
       max-parallel: 8
       matrix:
         system:
-          - name: Windows
-            os: windows-latest
-            compiler: gcc
+          # - name: Windows
+          #   os: windows-latest
+          #   compiler: gcc
           - name: macOS
             os: macos-latest
-            compiler: clang
-            missing_packages: --disable-fluidsynth
           - name: Linux
             os: ubuntu-20.04
-            compiler: gcc
         conf:
-          - configure_flags:  --enable-debug
-          - configure_flags:  --enable-debug=heavy
-          - configure_flags:  --enable-alsa-midi
-          - configure_flags:  --enable-png-static
-          - configure_flags:  --enable-sdl-static
-          - configure_flags:  --enable-png-static --enable-sdl-static
-          - configure_flags:  --disable-alsa-midi
-          - configure_flags:  --disable-core-inline
-          - configure_flags:  --disable-dynamic-x86
-          - configure_flags:  --disable-dynrec
-          - configure_flags:  --disable-fpu
-          - configure_flags:  --disable-fpu-x64
-          - configure_flags:  --disable-fpu-x86
-          - configure_flags:  --disable-opengl
-          - configure_flags:  --disable-opus-cdda
-          - configure_flags:  --disable-screenshots
-          - configure_flags:  --disable-unaligned-memory
-          - configure_flags:  --disable-fluidsynth
-          - configure_flags:  --disable-mt32
-          - without_packages: -x net
-          - without_packages: -x curses
-          - without_packages: -x net -x curses
+          - configure_flags:  -Denable_debugger=normal
+          - configure_flags:  -Denable_debugger=heavy
+          # - configure_flags:  --enable-alsa-midi
+          # - configure_flags:  --enable-png-static
+          # - configure_flags:  --enable-sdl-static
+          # - configure_flags:  --enable-png-static --enable-sdl-static
+          # - configure_flags:  --disable-alsa-midi
+          # - configure_flags:  --disable-core-inline
+          # - configure_flags:  --disable-dynamic-x86
+          # - configure_flags:  --disable-dynrec
+          # - configure_flags:  --disable-fpu
+          # - configure_flags:  --disable-fpu-x64
+          # - configure_flags:  --disable-fpu-x86
+          # - configure_flags:  --disable-opengl
+          # - configure_flags:  --disable-opus-cdda
+          # - configure_flags:  --disable-screenshots
+          # - configure_flags:  --disable-unaligned-memory
+          # - configure_flags:  --disable-fluidsynth
+          # - configure_flags:  --disable-mt32
+          # - without_packages: -x net
+          # - without_packages: -x curses
+          # - without_packages: -x net -x curses
     env:
       CHERE_INVOKING: yes
     steps:
@@ -93,15 +90,16 @@ jobs:
            scripts/list-build-dependencies.sh -m msys2 -c clang ${{ matrix.conf.without_packages }} | xargs pacman -S --noconfirm
            .github/scripts/shrink-msys2.sh
 
-      - name:  Install dependencies ${{ matrix.conf.without_packages }} (Linux)
+      - name:  Install dependencies (Linux)
         if:    matrix.system.name == 'Linux'
         run: |
           sudo apt-get -y update
-          sudo apt-get install -y $(./scripts/list-build-dependencies.sh -m apt -c gcc ${{ matrix.conf.without_packages }})
+          sudo apt-get install $(cat ./.github/packages/ubuntu-20.04-apt.txt)
 
-      - name:  Install dependencies ${{ matrix.conf.without_packages }} (macOS)
+      - name:  Install dependencies (macOS)
         if:    matrix.system.name == 'macOS'
-        run:   brew install $(./scripts/list-build-dependencies.sh -m brew -c clang ${{ matrix.conf.without_packages }})
+        run: |
+          brew install $(cat ./.github/packages/macos-brew.txt)
 
       - name:  Build ${{ matrix.conf.configure_flags }} (Windows)
         if:    matrix.system.name == 'Windows'
@@ -112,13 +110,12 @@ jobs:
 
       - name:  Build ${{ matrix.conf.configure_flags }} (macOS)
         if:    matrix.system.name == 'macOS'
-        run: >
-          export PKG_CONFIG_PATH="/usr/local/opt/ncurses/lib/pkgconfig:$PKG_CONFIG_PATH" &&
-          ./scripts/build.sh -c ${{ matrix.system.compiler }} -t debug
-          ${{ matrix.conf.configure_flags }} ${{ matrix.system.missing_packages }}
+        run: |
+          meson setup ${{ matrix.conf.configure_flags }} build
+          meson compile -C build
 
       - name:  Build ${{ matrix.conf.configure_flags }} (Linux)
         if:    matrix.system.name == 'Linux'
-        run: >
-          ./scripts/build.sh -c ${{ matrix.system.compiler }} -t debug
-          ${{ matrix.conf.configure_flags }} ${{ matrix.system.missing_packages }}
+        run: |
+          meson setup ${{ matrix.conf.configure_flags }} build
+          meson compile -C build
