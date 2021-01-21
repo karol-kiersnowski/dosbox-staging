@@ -112,10 +112,12 @@ jobs:
         if:    matrix.system.name == 'macOS'
         run: |
           meson setup ${{ matrix.conf.configure_flags }} build
-          meson compile -C build
+          cd build
+          ninja
 
       - name:  Build ${{ matrix.conf.configure_flags }} (Linux)
         if:    matrix.system.name == 'Linux'
         run: |
           meson setup ${{ matrix.conf.configure_flags }} build
-          meson compile -C build
+          cd build
+          ninja
