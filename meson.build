@@ -84,7 +84,7 @@ foreach header : ['pwd.h', 'strings.h', 'netinet/in.h', 'sys/socket.h']
 endforeach
 
 if cxx.has_header('windows.h')
-  conf_data.set('NOMINMAX')
+  conf_data.set('NOMINMAX', true)
 endif
 
 if host_machine.endian() == 'big'
