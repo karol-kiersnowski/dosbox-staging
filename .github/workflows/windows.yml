@@ -3,6 +3,26 @@ name: Windows builds
 on: [push, pull_request]
 
 jobs:
+
+  build_windows_msys2:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-toolchain meson
+      - name: CI-Build
+        run: |
+          echo 'Running in MSYS2!'
+          meson build
+          meson compile -C build
+
+
   build_windows_vs:
     name: ${{ matrix.conf.name }}
     runs-on: windows-latest
