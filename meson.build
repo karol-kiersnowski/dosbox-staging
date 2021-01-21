@@ -83,7 +83,7 @@ foreach header : ['pwd.h', 'strings.h', 'netinet/in.h', 'sys/socket.h']
   endif
 endforeach
 
-if cxx.has_header('windows.h')
+if cxx.get_id() == 'msvc'
   conf_data.set('NOMINMAX', true)
 endif
 
