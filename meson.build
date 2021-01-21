@@ -83,6 +83,10 @@ foreach header : ['pwd.h', 'strings.h', 'netinet/in.h', 'sys/socket.h']
   endif
 endforeach
 
+if cxx.has_header('windows.h')
+  conf_data.set('NOMINMAX')
+endif
+
 if host_machine.endian() == 'big'
   conf_data.set('WORDS_BIGENDIAN', 1)
 endif
