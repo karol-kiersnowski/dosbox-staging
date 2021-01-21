@@ -25,10 +25,10 @@ jobs:
         system:
           - name: Windows
             os: windows-latest
-          # - name: macOS
-          #   os: macos-latest
-          # - name: Linux
-          #   os: ubuntu-20.04
+          - name: macOS
+            os: macos-latest
+          - name: Linux
+            os: ubuntu-20.04
         conf:
           # - configure_flags:  -Denable_debugger=normal
           # - configure_flags:  -Denable_debugger=heavy
@@ -45,8 +45,10 @@ jobs:
 
     env:
       CHERE_INVOKING: yes
+
     steps:
       - uses:  actions/checkout@v2
+
       - name:  Check repo for commits
         id:    repo-meta
         shell: bash
@@ -84,12 +86,10 @@ jobs:
              mingw-w64-x86_64-gcc \
              mingw-w64-x86_64-libpng \
              mingw-w64-x86_64-opusfile \
-             mingw-w64-x86_64-pdcurses \
+             mingw-w64-x86_64-ncurses \
              mingw-w64-x86_64-SDL2 \
              mingw-w64-x86_64-SDL2_net \
              mingw-w64-x86_64-zlib
-
-           #pacman -S --noconfirm $(cat ./.github/packages/windows-msys2.txt)
            .github/scripts/shrink-msys2.sh
 
       - name:  Install dependencies (Linux)
@@ -107,28 +107,22 @@ jobs:
         if:    matrix.system.name == 'Windows'
         shell: python scripts\msys-bash.py {0}
         run: |
-          # scripts/build.sh -c ${{ matrix.system.compiler }} -t debug --bin-path /mingw64/bin
-          # ${{ matrix.conf.configure_flags }} ${{ matrix.system.missing_packages }}
           meson setup \
-            --wrap-mode=nofallback ${{ matrix.conf.configure_flags }} \
-            build
-          cd build
-          ninja
+            --native-file=.github/meson/native-mingw-w64-gcc.ini \
+            --wrap-mode=nofallback \
+            ${{ matrix.conf.configure_flags }} build
+          ninja -C build
 
       - name:  Build ${{ matrix.conf.configure_flags }} (macOS)
         if:    matrix.system.name == 'macOS'
         run: |
-          meson setup \
-            --wrap-mode=nofallback ${{ matrix.conf.configure_flags }} \
-            build
-          cd build
-          ninja
+          meson setup --wrap-mode=nofallback \
+            ${{ matrix.conf.configure_flags }} build
+          ninja -C build
 
       - name:  Build ${{ matrix.conf.configure_flags }} (Linux)
         if:    matrix.system.name == 'Linux'
         run: |
-          meson setup \
-            --wrap-mode=nofallback ${{ matrix.conf.configure_flags }} \
-            build
-          cd build
-          ninja
+          meson setup --wrap-mode=nofallback \
+            ${{ matrix.conf.configure_flags }} build
+          ninja -C build
