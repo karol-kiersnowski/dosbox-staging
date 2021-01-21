@@ -33,26 +33,17 @@ jobs:
         conf:
           # - configure_flags:  -Denable_debugger=normal
           # - configure_flags:  -Denable_debugger=heavy
-          # - configure_flags:  --enable-alsa-midi
           # - configure_flags:  --enable-png-static
           # - configure_flags:  --enable-sdl-static
           # - configure_flags:  --enable-png-static --enable-sdl-static
-          # - configure_flags:  --disable-alsa-midi
-          # - configure_flags:  --disable-core-inline
-          # - configure_flags:  --disable-dynamic-x86
-          # - configure_flags:  --disable-dynrec
-          # - configure_flags:  --disable-fpu
-          # - configure_flags:  --disable-fpu-x64
-          # - configure_flags:  --disable-fpu-x86
           - configure_flags:  -Duse_opengl=false
+          - configure_flags:  -Duse_fluidsynth=false
           - configure_flags:  -Duse_opusfile=false
           - configure_flags:  -Duse_png=false
-          # - configure_flags:  --disable-unaligned-memory
-          # - configure_flags:  --disable-fluidsynth
-          # - configure_flags:  --disable-mt32
-          # - without_packages: -x net
-          # - without_packages: -x curses
-          # - without_packages: -x net -x curses
+          - configure_flags:  -Ddynamic_core=dyn-x86
+          - configure_flags:  -Ddynamic_core=dynrec
+          - configure_flags:  -Ddynamic_core=none
+
     env:
       CHERE_INVOKING: yes
     steps:
@@ -111,13 +102,17 @@ jobs:
       - name:  Build ${{ matrix.conf.configure_flags }} (macOS)
         if:    matrix.system.name == 'macOS'
         run: |
-          meson setup ${{ matrix.conf.configure_flags }} build
+          meson setup \
+            --wrap-mode=nofallback ${{ matrix.conf.configure_flags }} \
+            build
           cd build
           ninja
 
       - name:  Build ${{ matrix.conf.configure_flags }} (Linux)
         if:    matrix.system.name == 'Linux'
         run: |
-          meson setup ${{ matrix.conf.configure_flags }} build
+          meson setup \
+            --wrap-mode=nofallback ${{ matrix.conf.configure_flags }} \
+            build
           cd build
           ninja
