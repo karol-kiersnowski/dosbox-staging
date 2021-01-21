@@ -15,7 +15,7 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: git mingw-w64-x86_64-toolchain mingw-w64-x86_64-python3 meson
+          install: git mingw-w64-x86_64-toolchain meson
       - name: CI-Build
         run: |
           echo 'Running in MSYS2!'
