@@ -107,9 +107,8 @@ jobs:
         if:    matrix.system.name == 'Windows'
         shell: python scripts\msys-bash.py {0}
         run: |
-          meson setup \
-            --native-file=.github/meson/native-mingw-w64-gcc.ini \
-            --wrap-mode=nofallback \
+          export PATH="/mingw64/bin:$PATH"
+          meson setup --wrap-mode=nofallback \
             ${{ matrix.conf.configure_flags }} build
           ninja -C build
 
