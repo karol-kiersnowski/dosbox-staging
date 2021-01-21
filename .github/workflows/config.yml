@@ -31,8 +31,8 @@ jobs:
           - name: Linux
             os: ubuntu-20.04
         conf:
-          - configure_flags:  -Denable_debugger=normal
-          - configure_flags:  -Denable_debugger=heavy
+          # - configure_flags:  -Denable_debugger=normal
+          # - configure_flags:  -Denable_debugger=heavy
           # - configure_flags:  --enable-alsa-midi
           # - configure_flags:  --enable-png-static
           # - configure_flags:  --enable-sdl-static
@@ -44,9 +44,9 @@ jobs:
           # - configure_flags:  --disable-fpu
           # - configure_flags:  --disable-fpu-x64
           # - configure_flags:  --disable-fpu-x86
-          # - configure_flags:  --disable-opengl
-          # - configure_flags:  --disable-opus-cdda
-          # - configure_flags:  --disable-screenshots
+          - configure_flags:  -Duse_opengl=false
+          - configure_flags:  -Duse_opusfile=false
+          - configure_flags:  -Duse_png=false
           # - configure_flags:  --disable-unaligned-memory
           # - configure_flags:  --disable-fluidsynth
           # - configure_flags:  --disable-mt32
