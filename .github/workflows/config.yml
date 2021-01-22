@@ -30,18 +30,16 @@ jobs:
           - name: Linux
             os: ubuntu-20.04
         conf:
+          - configure_flags:  -Duse_sdl2_net=false
+          - configure_flags:  -Duse_opengl=false
+          - configure_flags:  -Duse_fluidsynth=false
+          - configure_flags:  -Duse_opusfile=false
+          - configure_flags:  -Duse_png=false
           # - configure_flags:  -Denable_debugger=normal
           # - configure_flags:  -Denable_debugger=heavy
-          # - configure_flags:  --enable-png-static
-          # - configure_flags:  --enable-sdl-static
-          # - configure_flags:  --enable-png-static --enable-sdl-static
-          - configure_flags:  -Duse_opengl=false
-          # - configure_flags:  -Duse_fluidsynth=false
-          # - configure_flags:  -Duse_opusfile=false
-          # - configure_flags:  -Duse_png=false
-          # - configure_flags:  -Ddynamic_core=dyn-x86
-          # - configure_flags:  -Ddynamic_core=dynrec
-          # - configure_flags:  -Ddynamic_core=none
+          - configure_flags:  -Ddynamic_core=dyn-x86
+          - configure_flags:  -Ddynamic_core=dynrec
+          - configure_flags:  -Ddynamic_core=none
 
     env:
       CHERE_INVOKING: yes
