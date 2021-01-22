@@ -1,5 +1,5 @@
 project('dosbox-staging', 'c', 'cpp',
-        default_options : ['cpp_std=c++14', 'b_ndebug=if-release'],
+        default_options : ['cpp_std=c++14', 'c_std=c99', 'b_ndebug=if-release'],
         version : '0.77.0')
 
 assert(meson.version().version_compare('>= 0.45.1'),
