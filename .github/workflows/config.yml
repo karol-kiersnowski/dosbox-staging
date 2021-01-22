@@ -30,16 +30,16 @@ jobs:
           - name: Linux
             os: ubuntu-20.04
         conf:
-          # - configure_flags:  -Duse_sdl2_net=false
-          # - configure_flags:  -Duse_opengl=false
-          # - configure_flags:  -Duse_fluidsynth=false
-          # - configure_flags:  -Duse_opusfile=false
-          # - configure_flags:  -Duse_png=false
-          - configure_flags:  -Denable_debugger=normal
-          # - configure_flags:  -Denable_debugger=heavy
-          # - configure_flags:  -Ddynamic_core=dyn-x86
-          # - configure_flags:  -Ddynamic_core=dynrec
-          # - configure_flags:  -Ddynamic_core=none
+          - configure_flags:  -Duse_sdl2_net=false        # ok
+          # - configure_flags:  -Duse_opengl=false        # ok
+          # - configure_flags:  -Duse_fluidsynth=false    # ok
+          # - configure_flags:  -Duse_opusfile=false      # ?
+          # - configure_flags:  -Duse_png=false           # ok
+          # - configure_flags:  -Denable_debugger=normal  # broken on msys2
+          # - configure_flags:  -Denable_debugger=heavy   # broken on msys2
+          # - configure_flags:  -Ddynamic_core=dyn-x86    # ok
+          # - configure_flags:  -Ddynamic_core=dynrec     # ok
+          # - configure_flags:  -Ddynamic_core=none       # ok
 
     env:
       CHERE_INVOKING: yes
@@ -116,7 +116,7 @@ jobs:
             ${{ matrix.conf.configure_flags }} \
             -Duse_opengl=false \
             build
-          cat build/meson-logs/meson-log.txt
+          # cat build/meson-logs/meson-log.txt
           ninja -C build
 
       - name:  Build ${{ matrix.conf.configure_flags }} (macOS)
