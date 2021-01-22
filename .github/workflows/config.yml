@@ -32,13 +32,13 @@ jobs:
         conf:
           # - configure_flags:  -Duse_sdl2_net=false    # ok
           # - configure_flags:  -Duse_opengl=false      # broken
-          - configure_flags:  -Duse_fluidsynth=false
+          # - configure_flags:  -Duse_fluidsynth=false  # ?
           # - configure_flags:  -Duse_opusfile=false    # ok
           # - configure_flags:  -Duse_png=false         # ok
           - configure_flags:  -Denable_debugger=normal
-          # - configure_flags:  -Denable_debugger=heavy
-          - configure_flags:  -Ddynamic_core=dyn-x86
-          - configure_flags:  -Ddynamic_core=dynrec
+          # - configure_flags:  -Denable_debugger=heavy # broken?
+          # - configure_flags:  -Ddynamic_core=dyn-x86  # ?
+          # - configure_flags:  -Ddynamic_core=dynrec   # ?
           # - configure_flags:  -Ddynamic_core=none     # ok
 
     env:
@@ -63,7 +63,7 @@ jobs:
         if:    matrix.system.name == 'Windows'
         with:
           path: 'C:/tools/msys64'
-          key: msys2-64-${{ steps.get-date.outputs.date }}-4
+          key: msys2-64-${{ steps.get-date.outputs.date }}-5
 
       - name:  Install MSYS2 (Windows)
         if:    >
