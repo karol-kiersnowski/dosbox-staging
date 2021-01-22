@@ -167,13 +167,20 @@ if get_option('use_png')
   z_dep = dependency('zlib') # libpng in Ubuntu 16.04 needs zlib linked explicitly
 endif
 
+#if get_option('enable_debugger') != 'none'
+#  foreach curses : ['ncurses', 'ncursesw', 'pdcurses']
+#    if not curses_dep.found()
+#      curses_dep = dependency(curses, required : false)
+#    endif
+#  endforeach
+#  assert(curses_dep.found(), 'Dependency for "ncurses" not found.')
+#endif
+
+# try the meson way
 if get_option('enable_debugger') != 'none'
-  foreach curses : ['ncurses', 'ncursesw', 'pdcurses']
-    if not curses_dep.found()
-      curses_dep = dependency(curses, required : false)
-    endif
-  endforeach
-  assert(curses_dep.found(), 'Dependency for "ncurses" not found.')
+  assert(meson.version().version_compare('>= 0.54.0'),
+         'TODO better desc; cross-platform curses dep supported since 0.54.0')
+  curses_dep = dependency('curses')
 endif
 
 # macOS-only dependencies

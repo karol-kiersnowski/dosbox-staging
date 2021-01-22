@@ -106,7 +106,7 @@ jobs:
         if:    matrix.system.name == 'Windows'
         shell: python scripts\msys-bash.py {0}
         run: |
-          ls /mingw64/lib/
+          # ls /mingw64/lib/
           # TODO this pkg-config variable change seems necessary only for ncursesw
           #export PKG_CONFIG_PATH="/usr/local/opt/ncurses/lib/pkgconfig:$PKG_CONFIG_PATH"
           export PATH="/mingw64/bin:$PATH"
