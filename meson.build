@@ -203,8 +203,9 @@ endif
 # Windows-only dependencies
 #
 if host_machine.system() == 'windows'
-  winsock2_dep = cxx.find_library('ws2_32')
-  winmm_dep = cxx.find_library('winmm')
+  message('looking for Windows libraries')
+  winsock2_dep = cc.find_library('ws2_32', required : true)
+  winmm_dep = cc.find_library('winmm', required : true)
 endif
 
 
