@@ -110,7 +110,7 @@ jobs:
           # TODO this pkg-config variable change seems necessary only for ncursesw
           #export PKG_CONFIG_PATH="/usr/local/opt/ncurses/lib/pkgconfig:$PKG_CONFIG_PATH"
           export PATH="/mingw64/bin:$PATH"
-          export LDFLAGS="/mingw64/lib:$LDFLAGS"
+          # export LDFLAGS="/mingw64/lib:$LDFLAGS"
           # TODO opengl has some issue in msys2/meson ATM
           meson setup --wrap-mode=nofallback \
             ${{ matrix.conf.configure_flags }} \
