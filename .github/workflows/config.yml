@@ -30,16 +30,16 @@ jobs:
           - name: Linux
             os: ubuntu-20.04
         conf:
-          # - configure_flags:  -Duse_sdl2_net=false    # ok
-          # - configure_flags:  -Duse_opengl=false      # broken
+          - configure_flags:  -Duse_sdl2_net=false
+          # - configure_flags:  -Duse_opengl=false
           - configure_flags:  -Duse_fluidsynth=false
-          # - configure_flags:  -Duse_opusfile=false    # ok
-          # - configure_flags:  -Duse_png=false         # ok
+          - configure_flags:  -Duse_opusfile=false
+          - configure_flags:  -Duse_png=false
           - configure_flags:  -Denable_debugger=normal
           # - configure_flags:  -Denable_debugger=heavy
           - configure_flags:  -Ddynamic_core=dyn-x86
           - configure_flags:  -Ddynamic_core=dynrec
-          # - configure_flags:  -Ddynamic_core=none     # ok
+          - configure_flags:  -Ddynamic_core=none
 
     env:
       CHERE_INVOKING: yes
@@ -83,12 +83,12 @@ jobs:
              mingw-w64-x86_64-fluidsynth \
              mingw-w64-x86_64-gcc \
              mingw-w64-x86_64-libpng \
+             mingw-w64-x86_64-ncurses \
              mingw-w64-x86_64-opusfile \
              mingw-w64-x86_64-pkg-config \
              mingw-w64-x86_64-SDL2 \
              mingw-w64-x86_64-SDL2_net \
-             mingw-w64-x86_64-zlib \
-             ncurses-devel
+             mingw-w64-x86_64-zlib
            .github/scripts/shrink-msys2.sh
 
       - name:  Install dependencies (Linux)
