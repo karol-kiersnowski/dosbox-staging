@@ -54,31 +54,23 @@
 #define CROSS_FILE	1
 #define CROSS_DIR	2
 
-#if defined (WIN32)
-#define ftruncate(blah,blah2) chsize(blah,blah2)
-#endif
-
-// fileno is a POSIX function (not mentioned in ISO/C++), which means it might
-// be missing when when using C++11 with strict ANSI compatibility.
-// New MSVC issues "deprecation" warning when fileno is used and recommends
-// using (platform-specific) _fileno. On other platforms we can use fileno
-// because it's either a POSIX-compliant system, or the function is available
-// when compiling with GNU extensions.
-#if defined (_MSC_VER)
-#define cross_fileno(s) _fileno(s)
-#else
-#define cross_fileno(s) fileno(s)
-#endif
-
 namespace cross {
 
 #if defined(WIN32)
 
 struct tm *localtime_r(const time_t *timep, struct tm *result);
 
+// int fileno(FILE *stream)
+constexpr auto fileno = ::_fileno;
+
+// int ftruncate(int fd, long length)
+constexpr auto ftruncate = ::_chsize;
+
 #else
 
 constexpr auto localtime_r = ::localtime_r;
+constexpr auto fileno = ::fileno;
+constexpr auto ftruncate = ::ftruncate;
 
 #endif
 

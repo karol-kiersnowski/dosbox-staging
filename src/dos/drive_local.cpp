@@ -607,7 +607,7 @@ bool localFile::Write(uint8_t *data, uint16_t *size)
 
 	// Truncate the file
 	if (*size == 0) {
-		const auto file = cross_fileno(fhandle);
+		const auto file = cross::fileno(fhandle);
 		if (file == -1) {
 			DEBUG_LOG_MSG("FS: Could not resolve file number for %s", name.c_str());
 			return false;
@@ -615,7 +615,7 @@ bool localFile::Write(uint8_t *data, uint16_t *size)
 		if (!ftell_and_check()) {
 			return false;
 		}
-		if (ftruncate(file, stream_pos) != 0) {
+		if (cross::ftruncate(file, stream_pos) != 0) {
 			DEBUG_LOG_MSG("FS: Failed truncating file %s", name.c_str());
 			return false;
 		}
@@ -743,7 +743,7 @@ bool localFile::UpdateDateTimeFromHost()
 	time = 1;
 	date = 1;
 
-	const auto file = cross_fileno(fhandle);
+	const auto file = cross::fileno(fhandle);
 	if (file == -1)
 		return true; // use defaults
 
