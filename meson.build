@@ -178,9 +178,13 @@ endif
 
 # try the meson way
 if get_option('enable_debugger') != 'none'
-  assert(meson.version().version_compare('>= 0.54.0'),
-         'TODO better desc; cross-platform curses dep supported since 0.54.0')
-  curses_dep = dependency('curses')
+  if host_machine.system() == 'linux'
+    curses_dep = dependency('ncurses')
+  else
+    assert(meson.version().version_compare('>= 0.54.0'),
+           'Cross-platform curses dep supported since meson 0.54.0.')
+    curses_dep = dependency('curses')
+  endif
 endif
 
 # macOS-only dependencies
