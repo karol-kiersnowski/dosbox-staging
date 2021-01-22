@@ -168,7 +168,10 @@ if get_option('use_png')
 endif
 
 if get_option('enable_debugger') != 'none'
-  curses_dep = dependency('ncurses') # or pdcurses on Windows
+  curses_dep = dependency('ncurses')
+  if curses_dep.not_found()
+    curses_dep = dependency('ncursesw')
+  endif
 endif
 
 # macOS-only dependencies
