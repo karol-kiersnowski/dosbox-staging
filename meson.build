@@ -200,6 +200,7 @@ if host_machine.system() == 'linux'
   conf_data.set('C_ALSA', 1)
 endif
 
+message(':: building for ' + host_machine.system())
 # Windows-only dependencies
 #
 if host_machine.system() == 'windows'
