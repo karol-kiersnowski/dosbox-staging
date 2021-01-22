@@ -168,10 +168,12 @@ if get_option('use_png')
 endif
 
 if get_option('enable_debugger') != 'none'
-  curses_dep = dependency('ncurses')
-  if curses_dep.not_found()
-    curses_dep = dependency('ncursesw')
-  endif
+  foreach curses : ['ncurses', 'ncursesw', 'pdcurses']
+    if not curses_dep.found()
+      curses_dep = dependency(curses, required : false)
+    endif
+  endforeach
+  assert(curses_dep.found(), 'Dependency for "ncurses" not found.')
 endif
 
 # macOS-only dependencies
