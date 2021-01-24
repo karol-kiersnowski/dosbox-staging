@@ -77,8 +77,9 @@ jobs:
           steps.cache-msys2.outputs.cache-hit != 'true'
         shell: python scripts\msys-bash.py {0}
         run: |
-           cat .github/packages/windows-latest-msys2.txt
-           pacman -S --noconfirm - < .github/packages/windows-latest-msys2.txt
+           cat .github/packages/windows-latest-msys2.txt | tr '\n' ' ' > packages.txt
+           cat packages.txt
+           pacman -S --noconfirm $(cat packages.txt)
            .github/scripts/shrink-msys2.sh
 
       - name:  Install dependencies (Linux)
