@@ -77,7 +77,10 @@ jobs:
           steps.cache-msys2.outputs.cache-hit != 'true'
         shell: python scripts\msys-bash.py {0}
         run: |
+           echo "[pre-tr]"
+           cat .github/packages/windows-latest-msys2.txt
            cat .github/packages/windows-latest-msys2.txt | tr '\n' ' ' > packages.txt
+           echo "[post-tr]"
            cat packages.txt
            pacman -S --noconfirm $(cat packages.txt)
            .github/scripts/shrink-msys2.sh
