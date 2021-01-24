@@ -78,7 +78,7 @@ jobs:
         shell: python scripts\msys-bash.py {0}
         run: |
            cat .github/packages/windows-latest-msys2.txt
-           pacman -S --noconfirm -- $(cat .github/packages/windows-latest-msys2.txt)
+           pacman -S --noconfirm $(cat .github/packages/windows-latest-msys2.txt | xargs)
            .github/scripts/shrink-msys2.sh
 
       - name:  Install dependencies (Linux)
