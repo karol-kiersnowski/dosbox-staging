@@ -83,6 +83,8 @@ foreach header : ['pwd.h', 'strings.h', 'netinet/in.h', 'sys/socket.h']
   endif
 endforeach
 
+# Header windows.h defines old min/max macros, that conflict with C++11
+# std::min/std::max.  Defining NOMINMAX prevents these macros from appearing.
 if cxx.get_id() == 'msvc'
   conf_data.set('NOMINMAX', true)
 endif
