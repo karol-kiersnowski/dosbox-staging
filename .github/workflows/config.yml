@@ -106,8 +106,13 @@ jobs:
         if:    matrix.system.name == 'Windows'
         shell: python scripts\msys-bash.py {0}
         run: |
-          export PATH="/mingw64/bin:$PATH"
-          meson setup --wrap-mode=nofallback -Duse_opengl=false \
+          #export PATH="/mingw64/bin:$PATH"
+
+          # This should not work but let's try it anyway
+          meson setup \
+            --bindir=/mingw64/bin \
+            --wrap-mode=nofallback \
+            -Duse_opengl=false \
             ${{ matrix.conf.configure_flags }} build
           cat build/meson-logs/meson-log.txt
           ninja -C build
